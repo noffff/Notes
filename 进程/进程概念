@@ -1,0 +1,16 @@
+进程是一个程序执行的实例，在内核中可以叫做任务(task)或线程(thread)。Linux采用“轻量级进程”作为多线程。两个轻量级进程之间可以进行一些资源的共享，如地址空间，打开的文件等。
+在Linux中，一个线程组就是一组轻量级进程实现的多线程应用。
+内核通过“进程描述符(process descriptor)”来描述一个进程的详细信息(包括地址空间，进程优先级，状态等)
+进程描述符图片地址：./process_descriptor.jpg
+“进程描述符”中的state字段描述了进程当前所处的状态，该状态的种类有一组字符串组成,状态之间互斥。
+	1.TASK_RUNNING：可运行状态，正在运行或准备执行
+	2.TASK_INTERRUPTIBLE：可中断的等待状态。进程被挂起，直到有一条件变成真触发，产生一个硬件中断，释放进程正等待的系统资源，或传	      递一个信号给进程。
+	3.TASK_UNINTERRUPTIBLE：不可中断的等待状态。当打开一个设备文件，相应的驱动会去探测相应的设备，这个过程时不可中断的等待状态。	    4.TASK_STOPPED：暂停状态，进程执行被暂停。收到SIGDTOP，SIGTSTP，SIGTTIN或SIGTTOU信号后，进入该状态，
+	5.TASK_TRACED：跟踪状态。当一个进程被另一个进程监控时。。。
+另外两种特殊进程状态，可以放在process descriptor也可以放在exit_state字段中。
+	1.僵尸进程(EXIT_ZOMBIE)：进程的执行被终止，但父进程还没有发布wait4()或waitpid()的系统调用来返回有关死亡进程的信息。在发布之	      前，内核不会清除掉死亡进程的进程描述符中的数据。
+	2.僵死撤消状态(EXIT_DEAD)。。。。。。。。。。。
+内核通过 set_task_state和set_current_state宏分别设置指定进程状态和当前执行进程的状态。
+在“进程描述符”中的pid段中存放PID，PID一般按照顺序递增，不过PID有上限。64位中可以将PID上限调为4194304，Linux将不同的PID与进程一一关联，并且在内核中有一个pidmap_array的表来记录已分配和未分配的PID号。另一方面，同一线程组内的线程会有同一PID，该PID使用和线程组领头线程相同PID(该组中第一个轻量级进程的PID)。该值被放在进程描述符的tgid字段，getpid()系统调用返回当前进程的tgid值。
+因为进程都是有生命周期的，所以process descriptor放在动态内存中。process descriptor由两部分组成，一部分叫“线程描述符thread_info”，另一部分是内核态的“进程堆栈”。内核通过alloc_thread_info和free_thread_info宏为process descriptor和内存堆栈分配内存区。
+
