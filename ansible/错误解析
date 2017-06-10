@@ -1,0 +1,2 @@
+msg": "Using a SSH password instead of a key is not possible because Host Key checking is enabled and sshpass does
+ not support this.  Please add this host's fingerprint to your known_hosts file to manage this host." 出现这种错误是因为 ansible会检测需要连接主机的fingerprint，如果该值与主机know_hosts记载的值或该值并不存在，将会报这个错。解决方法，关闭该检测。export ANSIBLE_HOST_KEY_CHECKING=FALSE
