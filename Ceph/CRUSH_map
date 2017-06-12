@@ -1,0 +1,43 @@
+CRUSH map是Ceph集群的核心。利用CRUSH算法来指定负载的分配，数据的存储。
+利用CRUSH map可以在Ceph集群中逻辑模拟出从底层到上层的物理存储结构。
+CRUSH map里面结构有
+1.定义设备，由任意设备组成 -->定义语法：device 唯一的序号 osd的名称
+2.Bucket 种类，Bucket是CRUSH中存储单位的级别，可以模拟成逻辑上的物理结构。如一块硬盘是一个存储，一个阵列是比硬盘高一级的存储
+3.Bucket 实例，规划
+4.Rules 使用Bucket的方法。
+二、在CRUSH map中通常有默认的几个层级，由下至上（可以修改名称，但一般不）：
+	Root		10
+	Region  	9
+	Datacenter	8
+	Room		7
+	Pod		6
+	Pdu		5
+	Row		4
+	Rack		3
+	Chassis		2
+	host		1
+三、定义Bucket实例，这块定义Bucket有哪些设备组成，每个设备的负载，及存储算法。
+	1.定义方法，先表明Bucket类型 和Bucket 的名字。语法： [bucket-type] [bucket-name]
+	2.语法：id [一个独一无二的负数ID]
+	3.定义权重，
+	4.该bucket实例的种类，一般分为uniform、list、tree、straw
+		a).Uniform：item设备权重完全相同，应用场景设备统一
+		b).List：将item内容做为链表，列表对于弹性集群来说是 简单直白的，一个对象可能被重新分配到新的设备，也可能处于原来的设备上。应用场景：bucket 增加item，当从列表中删除中间或尾部item时，将发生大量不必要的移动。因此 适用于 不收缩或者极少收缩的 集群  
+		c).Tree：使用二叉树索树，在bucket包含大量item时 比list更有性能，适用于管理 大量设备 或嵌套的bucket
+		d).Straw：基于list和Tree的方法，给特定item一定优先级 如 list开头或避开整个子树上所有item，提升了处理副本的性能。Straw bucket type允许所有的item 通过竞争的方式(类似于一个抽签)来争取每一个副本的放置
+	5.定义bucket的hash算法，目前只有一种。语法：hash 0
+	6.分别定义组成该Bucket单元组件的权重，一般根据存储大小而定。例如，1T对应 1.0 500G对应0.5。语法：item [item-name] weight 权重------->例如  item osd.0 weight 0.1\n item osd.1 weight 0.2
+四、定义Bucket的使用规则：
+	一个集群中，会有很多的Pool，每个Pool都有自己的CRUSH map和CRUSH rule，通过该rule能定义pg的分布策略
+	语法：
+	rule 规则名称 {
+	   ruleset 规则分组
+	   type [replicate|erasure] 默认为replicate
+	   min_size 大小  如果池副本少于这个数，CRUSH不会选择该规则
+	   max_size 大小  如果池副本多于这个数，CRUSH不会选择该规则
+	   step take Bucket-name 选取bucket。
+	   step [choose|chooseleaf] [firstn|indep] {num} type {Bucket-type}  两个“|”同一方向为一组搭配。num通常为池副本数。当num==0时，会选择所有bucket。0 <num < 池副本数，选择num个bucket，  num <0 选择 池副本数减去num个bucket
+	   step emit  输出当前值并清空堆栈，用于规则末尾。
+	}
+从Ceph集群中拿去CRUSH map需要先获取编译好的CRUSH 1：#ceph osd getcrushmap -o filename;将编译过的文件反编译 2：#crushtool -d file -o filename1;修改完成后，将反编译的文件进行编译 3：#crushtool -c filename1 -o filename3;将编译后的文件注入集群，生效 #ceph osd set crushmap -l filename2
+

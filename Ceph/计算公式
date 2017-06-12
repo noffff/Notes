@@ -1,3 +1,9 @@
 Journal 设定，Journal 与Data盘的分离能够加速Ceph集群的读写操作。
 一般Journal盘设置大小有以下计算方式：
 OSD Journal Size = [2 * 吞吐量 * 数据同步的最大时间]  该吞吐量在硬盘吞吐量和网络吞吐量中取最小值
+每个OSD分配多少个PG的按照如下方式(官方推荐)：
+	0 <OSD_Numbers <5   --------> Pg_Number=128
+	5 <OSD_Numbers <10  --------> Pg_Number=512
+	50 <OSD_Numbers     --------> Pg_Number=(OSD_Numbers * 100)/池副本数
+
+
