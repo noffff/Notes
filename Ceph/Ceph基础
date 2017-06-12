@@ -1,0 +1,7 @@
+Ceph的基本组件有 Monitor、OSD、Metadata(Filesystem)
+集群利用CRUSH算法将大文件分割成一个个Object放入pg中，并按照Pool的设定对其创建相应的副本。
+Ceph以Pool来划分不同用途的存储，在Pool中以pg为存储单元，OSD为存储块。每个OSD上可以划分为多个pg，每个pg中可以存放多个对象。pg数是Pool的规定，只能增，不能减。pg数量决定OSD负载。一般一个OSD负责100多个pg，常见的数量计算公式：
+pg/Pool=(OSD*100)/the replicate number of pool。
+在计算pg的时候，要考虑到一个OSD上可能有多个Pool，并且还要考虑到作为OSD的磁盘性能，SAS和SSD的pg设置不同的。
+在设置pg数的时候，pgp数应该与pg数相等，间接理解pgp的值决定有效pg的数量。
+
