@@ -1,1 +1,3 @@
-有时候多块网卡时，默认路由是随机的。只要在网卡配置文件中加入 DEFROUTE=yes 参数，就会让该网卡成为默认路由
+有时候多块网卡时，默认路由是随机的。只要在网卡配置文件中加入 DEFROUTE=yes 参数，就会让该网卡成为默认路由。让其成为默认路由的时候，还可能存在一个问题。机器的DNS地址仍旧不是该网络的。因此需要加入PEERDNS=no参数让其dhcp的时候不修改/etc/resolve.conf文件。自己手动的修改该文件，把其DNS地址配置为自己想要的即可。
+该网址是centos官方对网卡配置参数的解释
+https://www.centos.org/docs/5/html/Deployment_Guide-en-US/s1-networkscripts-interfaces.html
