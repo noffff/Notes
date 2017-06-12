@@ -1,0 +1,14 @@
+几种故障状态：
+ACTIVE：正常状态，对外可进行读写操作
+Clean：正常状态，一个pg处于Clean状态，代表Prim OSD与副本OSD已经建立连接，并且没有发现冲突的OSD
+Degraded：不正常状态。对Prim OSD写入后，Prim OSD将该数据写入副本OSD，而副本OSD在没有返回ACK，pg将处于该状态。此时如果有一个OSD状态为Active那么就可以写入。
+Backfilling：新OSD加入集群，集群调整pg分布，该OSD接收这些对象的过程。
+Backfilling分为多个阶段：
+	Backfilling_wait：等待backfilling操作
+	Backfill：一个Backfill操作正在进行中
+	Backfill_too_full：执行了Backfill操作，但是没有相应的空间。
+	Incomplete：完成
+REMAPPED：当一个Acting set（）改变时，数据从老action set变为新action set时，在pg迁移完成之前，原Prim OSD仍旧对外提供服务。
+STALE：每个OSD会定期报告相关信息，如果一个pg的主OSD向Mon汇报，或者其他OSD向Mon汇报该Prim OSD宕了，那么Mon将该pg标为stale，pg失联。
+Unclean：pg中没有创建规定的对象副本数。
+Inactive：pg不能读写，一个OSD等待更新数据
