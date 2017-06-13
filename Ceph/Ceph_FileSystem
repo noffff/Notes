@@ -1,0 +1,4 @@
+这张图是Ceph FS的架构图。
+http://orh0ftvwf.bkt.clouddn.com/Ceph-Fs-architecture.png
+文件系统都是需要Metadata，Ceph FS理所当然也是需要的。Ceph FS需要至少一个Metadata
+

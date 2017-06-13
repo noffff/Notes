@@ -12,3 +12,5 @@ REMAPPED：当一个Acting set（）改变时，数据从老action set变为新a
 STALE：每个OSD会定期报告相关信息，如果一个pg的主OSD向Mon汇报，或者其他OSD向Mon汇报该Prim OSD宕了，那么Mon将该pg标为stale，pg失联。
 Unclean：pg中没有创建规定的对象副本数。
 Inactive：pg不能读写，一个OSD等待更新数据
+
+ceph-create-keys: admin_socket: exception getting command descriptions: [Errno 2] No such file or directory:启动Mon服务报错，本以为节点有多网络，没有指定public network所导致的，在配置文件中加上public network=xxxx，仍旧报错。最后发现，集群的配置文件一定要于集群名字相同。比如集群是My-Cluster那么配置文件名字就是My-Cluster.conf。修改完成后再次启动成功。
