@@ -8,8 +8,8 @@ OSD的稳定性和性能是依赖与底层文件系统，为了保证其数据�
 
 
 Ceph 创建集群：
-	第一步：需要配置Ceph源
-	```#ceph-release ceph 的版本，如jewel，hammer等
+	##第一步：需要配置Ceph源
+	#ceph-release ceph 的版本，如jewel，hammer等
     #distro 系统的版本 el7 el6等
     [ceph]
     name=Ceph packages for $basearch
@@ -32,7 +32,6 @@ Ceph 创建集群：
     priority=2
     gpgcheck=1
     gpgkey=https://download.ceph.com/keys/release.asc
-    ```
 Ceph增加Mon几个步骤:
 	1.拿取Ceph-Cluster-Client-admin-keyring
 	2.从集群获取Ceph-mon-keyring		-----> ceph auth get mon. -o xxx
