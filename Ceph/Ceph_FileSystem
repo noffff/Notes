@@ -1,7 +1,11 @@
+CephFS至少要用Jewel(10.2.0)版本，Linux 4.x内核才支持，这是第一个稳定的CephFS版本，并且包含fsck/repair工具。
+注意点： 使用一个激活的MDS（性能与稳定作取舍）并且不要用快照。
 这张图是Ceph FS的架构图。
 http://orh0ftvwf.bkt.clouddn.com/Ceph-Fs-architecture.png
-文件系统都是需要Metadata，Ceph FS理所当然也是需要的。Ceph FS需要至少一个Metadata,多个Metadata daemon可能提供集群性能，但不是绝对的。比如一个独立的应用跑在一个独立的Client，这种情况增加MDS进程
-提高MDS数量，是不会增加性能。除非需要并行操作大量的Metadata。一般情况下Cephfs 是默认1个Metadata daemon，如果想要开启多个 直接设置max_mds 会报错clusters are not enabled; set 'allow_multimds' to enable按照提示来即可
+文件系统都是需要Metadata，Ceph FS理所当然也是需要的。Ceph FS需要至少一个Metadata,多个Metadata daemon可能提供集群性能，但不是绝对的。比如一个独立的应用跑在一个独立的Client，
+这种情况增加MDS进程
+提高MDS数量，是不会增加性能。除非需要并行操作大量的Metadata。一般情况下Cephfs 是默认1个Metadata daemon，如果想要开启多个 直接设置max_mds 
+会报错clusters are not enabled; set 'allow_multimds' to enable按照提示来即可
 FSCID：CephFS有一个整数ID标识，这个ID叫做文件系统集群ID，或者FSCID
 rank：一个Ceph文件系统会有多个rank，从0开始。一个rank可以被认为是一个metadata。每个Ceph-mds进程在启动后，monitor集群会为其分配一个，一个进程只能有一个。进程停止，rank停止。
 GID：集群分配给进程的ID标识
@@ -25,3 +29,14 @@ mds_standby_replay      如果该项被设为true，那么会从启动的rank中
 ceph fs new <fs_name> <metadata-pool-name> <data-pool-name>
 
 e8: 1/1/1 up {0=my-op-2=up:active}, 1 up:standby  0就是rank的号  1/1/1/  第一个1是  第二个1是 第三个1是max_mds
+
+Jewel版本
+内联数据：默认情况下，所有的CephFS 文件数据都会存在RADOS对象中。如果开启内联数据，可能会有很多小于2KB的文件存储在MDS，这样虽然提升了小文件的性能但是会增大MDS节点的负载，其“inline_data”
+默认情况也为false
+多MDS：CephFS虽然被设计的可以将metadata打碎分不到多个运行的Metadata服务，从而满足任意的吞吐需求。但是这需要额外的很多代码量。多个MDS在负载不太高的情况下较为稳定，
+但是会经常出现各种失败的操作。到目前为止没有充足的测试，用来证明其是稳定可靠的。默认“allow_multimds”为false，开启该功能不光也将其设为true，还要修改max_mds
+快照：该功能可以对任意路径打快照，但是没有经过充分的测试来证明其稳定性。如果在使用期间发生任何问题 需要手动介入。并且，该功能不能在多个文件系统(一池多文件系统)中工作，因为可能删除一个
+文件系统的快照，从而造成其他文件系统快照数据的丢失。快照不能工作在多MDS文件系统。Firefly版本前是默认关闭的。
+一个CEPH集群多个文件系统：Jewel版本前，允许管理员用户在一个独立集群中创建多个CephFS的代码被整合到版本中。这些独立的fs有自己的MDS，集群map和数据。但对数据结构的修改和安全性仍存在隐患。
+就目前为止一个Ceph集群跑多个CephFs，没有前辈带你前行。所有问题都需要手动介入。“enable_multiple”通过该参数开启功能
+
