@@ -1,4 +1,27 @@
 这张图是Ceph FS的架构图。
 http://orh0ftvwf.bkt.clouddn.com/Ceph-Fs-architecture.png
-文件系统都是需要Metadata，Ceph FS理所当然也是需要的。Ceph FS需要至少一个Metadata
+文件系统都是需要Metadata，Ceph FS理所当然也是需要的。Ceph FS需要至少一个Metadata,多个Metadata daemon可能提供集群性能，但不是绝对的。比如一个独立的应用跑在一个独立的Client，这种情况增加MDS进程
+提高MDS数量，是不会增加性能。除非需要并行操作大量的Metadata。一般情况下Cephfs 是默认1个Metadata daemon，如果想要开启多个 直接设置max_mds 会报错clusters are not enabled; set 'allow_multimds' to enable按照提示来即可
+FSCID：CephFS有一个整数ID标识，这个ID叫做文件系统集群ID，或者FSCID
+rank：一个Ceph文件系统会有多个rank，从0开始。一个rank可以被认为是一个metadata。每个Ceph-mds进程在启动后，monitor集群会为其分配一个，一个进程只能有一个。进程停止，rank停止。
+GID：集群分配给进程的ID标识
+一个MDS进程有   rank、GID、name，如果该进程是备用进程，那么没有rank
+MDS进程停止与Monitor交互，Monitor在经过'mds_beacon_grace'秒设定前会将其标记为 "laggy"
+每个文件系统都可以定义一定数量的备用进程（包含热备进程），一个热备进程是不会分配给其他rank和Ceph fs的。只会对当前的负责。通过# ceph fs set <fs name> standby_count_wanted <count>设置
+可以将count数设为0来关掉健康检查
+通过下面设置可以，这些设置放置在MDS进程节点的ceph.conf文件中，进程启动时会将这些信息发送给Monitor
+mds_standby_for_name      
+mds_standby_for_rank
+mds_standby_for_fscid     如果 for_name有值，那么此就是装饰，如果for_namefalse，那么此值将表明该备份进程使用与该fscid集群中所以rank
+MON_FORCE_STANDBY_ACTIVE  开关，默认为开
+mds_standby_replay      如果该项被设为true，那么会从启动的rank中不停的读取metadata 日志。
+当没有上面的设置的话，所有作为备份的MDS进程不会针对某一特定的rank。这些设置通过特殊的名字和rank来与备份进程建立连接。
+一个rank有只能有一个热备进程，如果一个rank进程有两个热备进程，那么其中一个仍旧作为热备，另一个会变成普通备份。只要成为热备，那么就只会对主rank负责，对其他不负责(哪怕没有其他)。
+在v.10.2.1之前的Ceph中，当设置了mds_standby_for_ *时，此设置（当为false时）始终为真。
+当metadata daemon建立完毕后，需要建立两个池 一个 放fs data的一个放 fs metadata
+# ceph osd pool create cephfs_data(data-pool-name) <pg_num>
+# ceph osd pool create cephfs_metadata(metadata-pool-name) <pg_num> 
+然后利用创建出来的两个池，建立文件系统
+ceph fs new <fs_name> <metadata-pool-name> <data-pool-name>
 
+e8: 1/1/1 up {0=my-op-2=up:active}, 1 up:standby  0就是rank的号  1/1/1/  第一个1是  第二个1是 第三个1是max_mds
