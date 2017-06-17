@@ -8,4 +8,65 @@ Fio-flexible I/O tester
 	没有特殊的其他用途，只是描述该job是做什么的
 	
 	directory=str
-	文件名的前缀。文件放置的位置。可以通过':'符号从而指定多个目录。这些目录都会
+	文件名的前缀。文件放置的位置。可以通过':'符号从而指定多个目录。这些目录都会生成一个filename，并且克隆相同的JOB。如果设置的fio的文件名，那么只会使用第一个目录，如果没有指定，每次clone的时候都会生成一个文件。
+	
+	filename=str
+	fio通常基于job名称、线程数以及文件数量来组成文件名。如果想在一个或多个job的线程间共享文件，那么要指定一个文件名。如果I/O引擎是基于文件的，那么可以指定一系列的文件，通过":"分隔。"-"是保留的符号，根据读/写的设置代表输入和输出。如果要使用":"需要用"\"
+	
+	filename_format=str
+	如果在job间共享大量的文件，一般会用fio来生成相要的文件名。默认情况，fio会基于 job-name.jobnumer.filenumber的文件形式来生成文件。通过这个选项可以自己定义文件名的形式。Fio识别下面的相应变量。
+	$jobname           线程或进程的名字
+	$jobnum            线程或进程增加的数量
+	$filenum           随着进程和线程而增加的文件数量
+	例如 指定文件形式为  testfiles.$filenum那么当文件数为4时 会为  testfiles.4
+	
+	lockfile=str
+	Fio默认在执行IO前是不锁任何文件的。如果一个文件或文件描述符被共享，fio可以对这些文件进行序列化的IO从而保证最后结果的一致性。这种方式通常用来模仿共享文件的真实负载。一般lock模式有下面几种
+	none：不锁，默认
+	exclusive：一次只允许一个线程或进程执行IO操作，拒绝其他
+	readwrite：对文件进行读写锁死，可以同时读，但不能同时写
+	
+	opendir=str 
+	递归打开目录
+	
+	readwrite=str,rw=str
+	I/O的方式，可以接受的值有：
+		read 顺序读
+		write 顺序写
+		trim   顺序trim(Linux 块设备)
+		randread 随机读
+		randwrite 随机写
+		randtrim  随机trim
+		rw，readwrite 融合了顺序读写
+		randrw  融合了随机读写
+		trimwrite 融合了Trim和write操作。块会先trim，然后该块在被写入
+	在读写混合的情况下，默认读写操作各占一半(50%)。但在实际情况下会稍有偏差，毕竟这两种操作的速度是不同的。也可以指定IO的偏移量，器类型通过添加 ":<nr>"。比如说一个随机读 rw=randread:8,其偏移量为8。如果其后缀
+	使用的是 顺序 IO的模式，那么在每次的IO操作时，都会加上这个偏移量。举个例子，使用rw=rwrite:4k 会在每次写操作时跳过4K。将顺序IO变成类似打孔似的IO。
+	
+	rw_sequencer=str
+	如果在rw=str这行添加了偏移量，那么该选项将控制如何生存IO偏移量。可接受的变量有：
+	sequential：生成顺序偏移量
+	identical: 生成相同的偏移量
+	sequential只对随机IO有效。随机IO时，fio每次IO会生成一个新的random 偏移量。如果设置randread偏移量为8，那么每8次IO,都得到一个新的随机的偏移量。所以得到的结果是8次IO的结果。因为顺序IO已经是有序的，对job设置顺序是不会对结果产生任何影响。
+	
+	kb_base=int
+	设定kb的值，一般情况kb为2^10 也就是1024。但是存储厂商跟喜欢用10^3,1000。在某些情况下，当对此值有明确的要求时可以通过该参数设置，默认为1024
+	
+	unified_rw_reporting=bool
+	fio会针操作数据类型方法的不同，而分别汇报。比如说 read、write及trim这些有关联的操作，会被分隔开了展现。如果该参数为true，那么这些信息都将汇总起来报道
+	
+	randrepeat=bool
+	默认为True，随机I/O的pattern使用随机数生成器生成。使parttern是可重现的。
+	
+	allrandrepeat=bool
+	所有东西都使用随机数生成器，使所有结果都可重新。默认为false
+	
+	randseed=int
+	基于给定的seed值，来作为随机数生成器。使用这种方式可以控制生成的输出，如果没有设置该选项，随机序列取决randrepeat
+	
+	fallocate=str这行添加了偏移量，那么该选项将控制如何生存IO偏移量。可接受的变量有：
+	
+	
+	
+		
+		
