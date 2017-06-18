@@ -3,11 +3,6 @@ Ceph以Pool来划分不同用途的存储，在Pool中以pg为存储单元，OSD
 在计算pg的时候，要考虑到一个OSD上可能有多个Pool，并且还要考虑到作为OSD的磁盘性能，SAS和SSD的pg设置不同的。
 在设置pg数的时候，pgp数应该与pg数相等，间接理解pgp的值决定有效pg的数量。
 OSD的稳定性和性能是依赖与底层文件系统，为了保证其数据安全性，只有当OSD节点数据真正落盘以后，才会返回写入成功。因此要关闭硬盘的写缓冲。
-
-
-
-
-
 Ceph增加Mon几个步骤:
 	1.拿取Ceph-Cluster-Client-admin-keyring
 	2.从集群获取Ceph-mon-keyring		-----> ceph auth get mon. -o xxx
@@ -15,3 +10,17 @@ Ceph增加Mon几个步骤:
 	4.创建mon的数据目录                     -----> mkdir /var/lib/ceph/mon/ceph-{mon-id}
 	5.格式化数据目录			-----> ceph-mon -i {mon-id} --mkfs --monmap xxxx --keyring xxx 
 	6.启动Monitor daemon/或者修改ceph配置文件指定 mon addr或者通过# ceph-mon -i {mon-id} --public-addr {ip:port}命令
+Ceph增加OSD几个步骤：
+	1.使用uuidgen获取一个独立的序号，作为这个OSD的号
+	2.使用这个uuid创建一个属于自己的 OSD序号
+	3.创建OSD数据目录。然后用盘挂上去
+	4.初始化                                ----> ceph-osd -i {osd-序号} --mkfs --mkkey --osd-uuid 上面uuidgen获取的独立序号
+	5.为这个OSD建立接口及相应的权限         ----> sudo ceph auth add osd.{osd-num} osd 'allow *' mon 'allow profile osd' -i /var/lib/ceph/osd/{cluster-name}-{osd-num}/keyring
+	6.将这个新节点加入到CRUSH map中         ----> ceph [--cluster {cluster-name}] osd crush add-bucket {hostname} host
+	7.将这个节点放入到CRUSH的默认的root层下 ----> ceph osd crush move {host-name} root=default
+	8.将OSD加入CRUSH map，让其能够接收到数据----> ceph [--cluster {cluster-name}] osd crush add {id-or-name/osd.序号} {weight} [{bucket-type}={bucket-name} ...]
+Ceph增加MDS几个步骤：
+	1.创建MDS目录                        -----> /var/lib/ceph/mds/{cluster-name}-id    id任意
+	2.创建mds接口秘钥					 -----> ceph-authtool --create-keyring /var/lib/ceph/mds/{cluster-name}-id/keyring --gen-key -n mds.id
+	3.将秘钥导入并且设置相关权限		 -----> ceph auth add mds.{id} osd 'allow rwx' mds 'allow' mon 'allow profile mds' -i /var/lib/ceph/mds/{cluster-name}-id/keyring
+	4.将相关信息加入 ceph.conf           [mds.{id}] \n host = {id}
