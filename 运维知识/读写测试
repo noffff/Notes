@@ -186,3 +186,6 @@ Fio-flexible I/O tester
 	
 	thread
 	使用该参数，会创建线程，而不是使用fork创建进程。
+	
+	numjobs=int
+	执行相同工作任务的(线程/进程)克隆的数量。默认为1
