@@ -5,9 +5,7 @@ https://www.centos.org/docs/5/html/Deployment_Guide-en-US/s1-networkscripts-inte
 
 加入几个网卡后，每个网卡默认都是dhcp方式，然后重启network服务时报错如下
 Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
-Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
-Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
-Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
-Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
-Jun 12 02:29:53 my-op-1.novalocal network[2424]: RTNETLINK answers: File exists
 查看进程发现有多个dhclient进程，怀疑是多个dhclient发生某文件冲突，将所有dhclient服务都杀掉以后，再次启动服务无报错。
+
+
+
