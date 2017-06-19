@@ -1,0 +1,53 @@
+iptalbes是一款管理内核 netfifter的软件，是对IPV4/6包过滤和NAT的工具
+使用方法
+	iptables [-t 表名] {-A|-C|-D} 链 规则
+	iptables [-t 表名] -I 链 规则    插入一条或多条规则。可以指定插入的规则号，一般是默认的。
+	iptables [-t 表名] -R 链 规则序号 规则     -R/--replace 替换链中的规则。
+	iptables [-t 表名] -D 链 规则号    -D --delete chain 指定的规则/规则号 从链中删除规则。第一条规则是的规则号是1
+	iptables [-t 表名] -S [链 链序列号]
+	iptables [-t 表名] {-F|-L|-Z} [链 规则号 参数]  -F/--flush 如果没有指定链，那么会删除表中所有的链 -L/--list 如果没有指定链，则列出所有的规则，可以搭配-n或-v参数使用。 -Z/--zero 如果没有指定链或者链中的规则号，那么会将表中的所有链计数器置0。搭配-L参数可以在清零前，显示出次数。
+	iptables [-t 表名] -N 链 指定名字，创建一条新的链。
+	iptables [-t 表名] -X 链  删除一条用户定义的链。
+	iptables [-t 表名] -P 链 标记  把指定的标记设置为链的策略。只有自带的链才有策略。
+	iptables [-t 表名] -E 老链名 新链名 -E/--rename-chain 重命名链。
+	rule-specification = [matches..] [target]
+	match = -m matchname [per-match-options]
+	target = -j targetname [per-target-options]
+每一个规则都会指定如何去匹配。
+如果一个包不匹配该规则，那么会继续下一条规则的匹配。如果匹配，通过其target值到跳到指定的下一个规则，这个可以是用户定义的链，或者ACCEPT、DROP、RETURN。
+RETURN:停止匹配该链，从哪跳过来的就回到那个链，并从跳过来的地方下一条执行继续匹配，如果到链尾都未曾被给予通不通过的决策，那么取决于默认策略。
+
+表：
+	目前有五张表
+	filter: 默认表，包含INPUT链(负责处理所有目的地址是本机的数据包)、FORWARD(处理经过本节点转发的数据包)、OUTPUT(处理所有原地址是本机地址的数据包)
+	nat: 建立新的连接的包会查询该表。内置三个链，PREROUTING，修改包的目的地址)、OUTPUT(和主机发出的数据包有关，在路由器改变主机发出包的目的地址)，POSTROUTING(在数据包离开防火墙时进行路由判断之后的规则，改变包的源地址)
+	mangle: 该表专门修改数据包。从kernel 2.4.17版本开始 有两个链 PREROUTING(修改在路由前，传入的数据包)和OUTPUT(修改源地址是本机，但还没有路由的包)；内核2.4.18开始，又多了另外三个表。INPUT,FORWARD,POSTROUTING
+	raw: 此表在netfilter hook中有较高的优先级，因此在ip_conntrack和其他表之前流过。该表主要配置放行那些打了NOTRACK标记的连接。有两个链，PREROUTING(通过各种网络接口，到达本地的包)、OUTPUT(本地进程生成的包)
+	security: 该表是用来限制MAC地址的规则。例如开启SECMARK和CONNSECMARK标记。这个表在filter表之后调用。提供INPUT链，OUTPUT链，FORWARD链
+	
+参数：
+	这些参数组成规则。规则前面加叹号的，代表取反
+	-4/--ipv4
+		这个参数对IPtables iptables-restore没有任何影响，如果该参数被插入到ip6tables-restore中，会被忽略。当ipv4和v6 的规则都在同一文件中时才会使用。
+	-6/--ipv6
+		同上
+	[!] -p/--protocol protocol
+		该规则中的协议会对包进行检查，可以指定的协议有 "tcp","udp","udplite","icmp","icmpv6","esp","sctp","mh"，或者全部协议"all"。也可以用协议的数字形式代替。可以从/etc/protocols中查看相关协议内容。"all"协议的数字形式为0，代表匹配所以，默认情况下就是all。
+	[!] -s/--source address[/mask][,...]
+		指定源地址。地址可以是网络名，主机名，一个网络段。也可以使用--src别名。如果这里使用主机名，在将这个规则提交给内核时，那么这里只会解析一次。通过远程DNS来解析这个域名不推荐。可以指定多个的地址，但会拓展成多个规则。
+	[!] -d/--destination address[/mask][,...]
+		和-s参数语法一致。--dst是其别名
+	-m/match match
+		使用指定的拓展模块，该模块内部有一些具体的实现参数。
+	-j/jump target
+		如果包匹配了这条，就可以决定让该包做什么。可以直接给予target值 ACCEPT...等，也可以指定其他链
+	-g/--goto chain
+	[i] -i/--in-interface name
+		接收数据包的网络接口名称。负责进入INPUT、FORWARD和PREROUTING链的包。如果接口名称以"+"结尾，那么所有以这个名字开头的接口都会匹配该规则。如果没有该参数，默认匹配所有接口。
+	[i] -o/--out-interface name
+		所有发送数据包的网络接口名称，负责进入FORWARD、OUTPUT和POSTROUTING链。+号同-i/--in-interface
+	[i] -f/--fragment
+		在一些情况，包大于MTU值时会被分段，然后发送，但是第一段中包含包头的完整信息，而后续段中只有部分信息，如果没有此参数，那么可能就只让第一个分段过，后续的分段就不让过了。使用该参数会使规则参照第二段的相应内容来进行处理。如果在-f前加上"!"那么就会只处理包头，或者未分片的包。
+	-c/set-counters packets bytes
+		在INSERT,APPEND,REPLACE规则时，对包和字节计数器进行初始化。
+		
