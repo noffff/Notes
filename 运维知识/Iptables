@@ -51,3 +51,5 @@ RETURN:停止匹配该链，从哪跳过来的就回到那个链，并从跳过�
 	-c/set-counters packets bytes
 		在INSERT,APPEND,REPLACE规则时，对包和字节计数器进行初始化。
 		
+例子
+http://www.thegeekstuff.com/2011/06/iptables-rules-examples

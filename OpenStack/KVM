@@ -1,18 +1,25 @@
-KVM����ָ�����̵Ļ���ģʽ��
+KVM可以指定磁盘的缓存模式。
 	1.writethrough
 	2.writeback
 	3.none
 	4.directsync
 	7.unsafe
-ʹ�û��������ĳЩ�ض�ʱ�򣬵������ݵĶ�ʧ��
+使用缓存可能在某些特定时候，导致数据的丢失。
 
-QEMU֧�ִ��̾����ʽ��
+QEMU支持磁盘镜像格式：
 	1.raw
 	2.qcow2
 	3.cow
 	4.qcow2
 	5.vmdk
-	6.dmg Mac���̸�ʽ
-raw��ʽ��һ���Է�����ռ䣬��qcow2���ö��ٷ�����١�����֧��ϡ�����Ե��ļ�ϵͳ�� ls raw��ʽ ���ѷ���Ĵ�С��du raw��ʽ ����ʾ��С��û�з���Ĵ�С��
-raw��qcow2���������Ϊ�󱸾��񡣲�������ֻ����qcow2����raw��qcow2������Ϊ��˾��񣬶�qcow2������Ϊǰ�˵ľ��񡣣�
-qcow2���������ա�
+	6.dmg Mac磁盘格式
+raw格式是一次性分配完空间，而qcow2则用多少分配多少。但在支持稀疏特性的文件系统中 ls raw格式 是已分配的大小，du raw格式 会显示很小，没有分配的大小。
+raw和qcow2镜像可以作为后备镜像。差量镜像只能是qcow2。(raw和qcow2可以作为后端镜像，而qcow2可以作为前端的镜像。)
+qcow2可以做快照。
+
+
+虚拟上网有两种方式，桥接和nat方式。
+在宿主机中以Linux-Bridge的形式，将所有虚机的虚拟网卡接入到这个桥里。
+如果使用桥接方式，需要将一块物理网卡加入到这个桥里。
+如果使用nat方式，则不需要将物理网卡加入桥里，将这个桥的流量通过iptables 进行SNAT，使桥中的虚机网卡能够上网。
+docker上网方式也类似。
