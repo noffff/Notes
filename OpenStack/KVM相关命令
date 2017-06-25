@@ -1,0 +1,14 @@
+调整NUMA架构
+# virsh numatune instance-name 'kvm的NUMA节点，宿主机NUMA节点'       调节宿主机NUMA节点数负载的kvm NUMA节点
+<vcpu placement='static' cpuset='0-10',^5>8</vcpu>     指定KVM使用宿主机中CPU的哪一个核，-范围，^排除
+
+<cputune>
+	<vcpupin vcpu='0' vcpuset='1-4',^2/>  指定kvm的0核与宿主机1-4除了2的核绑定 #command形式为"virsh vcpupin --help"
+	<emulatorpin cpuset='1-3'/>       让虚拟机使用的CPU和存储器都在一宿主机的一个物理CPU上
+</cputune>
+
+<cpu>
+	<numa>
+		<cell cpus='0-3' memory='1024'> 限制资源的使用 CPUS为虚机CPU能够使用宿主机的核
+	</numa>
+</cpu>

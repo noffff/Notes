@@ -23,3 +23,11 @@ qcow2可以做快照。
 如果使用桥接方式，需要将一块物理网卡加入到这个桥里。
 如果使用nat方式，则不需要将物理网卡加入桥里，将这个桥的流量通过iptables 进行SNAT，使桥中的虚机网卡能够上网。
 docker上网方式也类似。
+
+有很多种创建虚机的方式，可以使用virsh 通过已经定义好的XML文件创建。也可以通过virt-install 指定虚拟机使用的资源（内存，VCPU等）来创建，该方法创建的虚拟机会默认生成XML文件
+
+对KVM虚机CPU调优可以是有 numactl 这个包
+KVM虚机CPU架构为NUMA，可以使用“virsh numatune 虚机ID”查看虚机CPU NUMA的架构类型，一般有strict(指定CPU)和auto(使用系统numad服务)
+每个虚拟机上的核都会对应物理机上的一个核，可以通过 "virsh vcpuinfo instance-name/instance-number"
+http://orh0ftvwf.bkt.clouddn.com/%E6%8A%A5%E5%A4%B4%E7%BB%93%E6%9E%84.jpg
+如图中所示，虚拟核0 调度到宿主机核3上。而其中的y表示虚拟核可以被调度到那几个物理核

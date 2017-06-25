@@ -40,6 +40,7 @@ jobs文件分为几个部分
 	递归打开目录
 	
 	readwrite=str,rw=str
+	顺序读写用来计算吞吐量，随机4k写测量IOPS
 	I/O的方式，可以接受的值有：
 		read 顺序读
 		write 顺序写

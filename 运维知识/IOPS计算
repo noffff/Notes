@@ -6,6 +6,9 @@ IOPS 就是每秒钟I/O的操作。是衡量计算机存储设备性能的一种
 IOPS与MB/s值转化公式如下：
 IOPS * 传输大小(单位字节)= 每秒钟的字节数
 IOPS=1/(寻道时间+延迟)  将磁盘旋转周期的一半作为旋转延迟的近似值
+IOPS与MBps的转换
+IOPS=(MBps 吞吐量/每个IO的KB) * 1024
+MBps=(IOPS * 每个IO的大小KB)/1024
 通过提高HDDS设备的IO队列(未解决的IO)，可以提高其性能
 
 下面是常见不同转速的机械硬盘对不同IOPS表  rpm(Revolutions Per Minute)每分钟转速
