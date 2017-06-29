@@ -31,3 +31,31 @@ KVM虚机CPU架构为NUMA，可以使用“virsh numatune 虚机ID”查看虚�
 每个虚拟机上的核都会对应物理机上的一个核，可以通过 "virsh vcpuinfo instance-name/instance-number"
 http://orh0ftvwf.bkt.clouddn.com/%E6%8A%A5%E5%A4%B4%E7%BB%93%E6%9E%84.jpg
 如图中所示，虚拟核0 调度到宿主机核3上。而其中的y表示虚拟核可以被调度到那几个物理核
+CPU绑定通过Cgroup实现。，也可以通过Cgroup直接绑定KVM虚拟机的进程也可以。
+设定VCPU的最大值，然后当前VCPU小于这个值时，可以使用模拟热插拔的技术增加 #VCPU setvcpus 虚机 VPU_COUNT --live 在线  qemu必须在1.5之上。CentOS7系统
+目前不支持热拔/热减少VCPU 不过可以关闭VCPU。/sys/devices/system/cpu/cpuN/online  将该值设为0，表明N号CPU不工作
+
+KVM在使用VCPU时，默认情况不会准确显示物理CPU的型号，因此也不具备物理CPU的一些特性，在某些情况下是需要物理CPU的特性的，可以将cpu mode设置为 'host-passthrough'。使用该方式时，不同型号CPU的宿主机之间虚拟机不能迁移。
+下面为默认的cpu模式，
+" 
+<cpu mode='custom' match='exact'>
+    <model fallback='allow'>Westmere</model>
+</cpu>
+"
+指定"host-passthrough"模式
+"
+<cpu mode='host-passthrough'/>
+"
+禁止一些虚机被主机进行KSM，
+<memoryBacking>
+	<nosharepages/>
+</memoryBacking>
+KVM 内存气球：
+	所谓气球，就是可膨胀可缩小。内存气球意思就是KVM虚机内存动态改变，不过要依赖于 “virt balloon”和“内核开启 CONFIG_VRITIO_BALLOON” CentOS7默认已经做了所有工作
+	虚拟配置文件中需要加入
+	"
+	<memballoon model='virtio'>
+		<alias name='balloon0'/>
+	</memballoon>
+	"
+	在虚拟机的lspci可以看到“ Red Hat, Inc Virtio memory balloon”这样的设备

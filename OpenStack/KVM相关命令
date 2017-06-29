@@ -3,8 +3,8 @@
 <vcpu placement='static' cpuset='0-10',^5>8</vcpu>     指定KVM使用宿主机中CPU的哪一个核，-范围，^排除
 
 <cputune>
-	<vcpupin vcpu='0' vcpuset='1-4',^2/>  指定kvm的0核与宿主机1-4除了2的核绑定 #command形式为"virsh vcpupin --help"
-	<emulatorpin cpuset='1-3'/>       让虚拟机使用的CPU和存储器都在一宿主机的一个物理CPU上
+	<vcpupin vcpu='0' vcpuset='1-4',^2/>  指定kvm的0核与宿主机1-4除了2的核绑定 
+	<emulatorpin cpuset='1-3'/>       让虚拟机使用的CPU和存储器都在一宿主机的一个物理CPU上，指定物理CPU的范围
 </cputune>
 
 <cpu>
@@ -12,3 +12,8 @@
 		<cell cpus='0-3' memory='1024'> 限制资源的使用 CPUS为虚机CPU能够使用宿主机的核
 	</numa>
 </cpu>
+<vcpu placement='static' current='2'>4</vcpu>  表示最大VCPU4 但是目前为2 为了以后的拓展
+virsh vcpuinfo 虚拟机号  可以查看VCPUS和物理CPU对应关系
+http://orh0ftvwf.bkt.clouddn.com/%E8%99%9A%E6%8B%9F%E6%A0%B8%E5%AF%B9%E5%AE%BF%E4%B8%BB%E6%9C%BA%E6%A0%B8.jpg
+virsh emulatorpin 虚拟机号 CPU范围  强制改变虚拟机使用的CPU范围 emulatorpin主要是指定在同一个物理CPU上使用核心的编号
+

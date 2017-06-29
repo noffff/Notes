@@ -24,6 +24,7 @@ mds_standby_for_rank
 mds_standby_for_fscid     如果 for_name有值，那么此就是装饰，如果for_namefalse，那么此值将表明该备份进程使用与该fscid集群中所以rank
 MON_FORCE_STANDBY_ACTIVE  开关，默认为开
 mds_standby_replay      如果该项被设为true，那么会从启动的rank中不停的读取metadata信息（热备）
+当集群与MDS失去联系达“mds_beacon_grace”秒后（默认15秒），会标记该MDS“laggy” 
 
 当没有上面的设置的话，所有作为备份的MDS进程不会针对某一特定的rank。这些设置通过特殊的名字和rank来与备份进程建立连接。
 
@@ -45,4 +46,6 @@ Jewel版本
 文件系统的快照，从而造成其他文件系统快照数据的丢失。快照不能工作在多MDS文件系统。Firefly版本前是默认关闭的。
 一个CEPH集群多个文件系统：Jewel版本前，允许管理员用户在一个独立集群中创建多个CephFS的代码被整合到版本中。这些独立的fs有自己的MDS，集群map和数据。但对数据结构的修改和安全性仍存在隐患。
 就目前为止一个Ceph集群跑多个CephFs，没有前辈带你前行。所有问题都需要手动介入。“enable_multiple”通过该参数开启功能
+
+
 
