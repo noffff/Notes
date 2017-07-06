@@ -1,0 +1,15 @@
+# ifcfg-br0
+DEVICE=br0
+TYPE=Bridge
+IPADDR=192.168.1.1
+PREFIX=24
+BOOTPROTO=none
+ONBOOT=yes
+DELAY=0
+# ifcfg-eth1
+DEVICE=ethX
+TYPE=Ethernet
+HWADDR=AA:BB:CC:DD:EE:FF
+BOOTPROTO=none
+ONBOOT=yes
+BRIDGE=br0
