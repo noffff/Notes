@@ -1,5 +1,24 @@
-Xen是一款半虚拟化开源软件
-Dom0全称“domain 0”是在Xen hypersviort在启动时的初始进程，用来管那些DomU。并且是Xen的核心用来与硬件直接进行交互,提供相应的驱动以及DomU中的\
+Xen是一款半虚拟的化开源软件
+半虚拟化比硬件虚拟化效率更高，并且hypervisor能够运行在不支持虚拟化拓展的硬件上。
+Guest types：Xen可以提供HVM（全虚拟化）和PV（半虚拟化）两种机制，这两种虚拟化方式可以在一个hypervisor同时使用。也可以在HVM上创建PV-->PVH。HVM在PV上叫做HVMPV
+Domain 0：还可以叫做“main control stack”，是在Xen hypersviort在启动时的初始进程，用来管那些DomU。并且是Xen的核心用来与硬件直接进行交互,提供相应的驱动以及DomU中的\
 虚拟磁盘和网络。运行在后台。
 DomU是Dom0的副本，默认没有访问硬件的权限。通常使用这种形式来实习硬件的多路复用，DomU的内核来自于Dom0。
+Toolstacks：Xen包含的工具堆
+Xen架构图：
+	https://wiki.xenproject.org/wiki/File:Xen_Arch_Diagram.png
+各个版本Xen的功能特性：
+	https://wiki.xenproject.org/wiki/Xen_Project_Release_Features
+Xen在硬件层之上，直接负责与CPU等硬件交互。在BootLoader后第一个启动的进程。在其上层就是hypervisor运行的一些列虚拟机，这些虚机可以叫做“domain”或者“guest”。domain 0 是一个特殊的domain，其包含了系统的所有驱动，也包含了虚机的创建、配置等一些列操作。
+相关组件：
+	Xen Hypervisor：直接运行在硬件上的软件。负责管理调度CPU等资源。在完成BootLoader后，第一个		进程。没有I/O功能
+        Guest Domain Machines：虚拟机环境，虚机与物理硬件是隔离的，没有权限堆硬件进行IO操作。因此		被叫做 unprivilieged domain（DomU）
+	THE Control Domain（Domain 0）特有的虚机,第一个虚机，有权利和能力直接访问硬件。处理所有对  		系统IO并与虚机交互的请求。对外界暴露管理接口。	
+	Toolstack and Console：Domain 0包含的一个控制栈。通过这个可以实现创建销毁虚机等功能。
+	Xen Project-enabled opreating systems：Domain 0 依赖一个Xen project-enabled内核。半虚拟化需要一个PV-enabled内核。
+
+PV:高效轻量的虚拟化技术，不需要CPU虚拟化支持，但是需要PV-enabled内核和PV驱动。
+HVM:硬件层的完全虚拟化，不需要内核支持，使用CPU的虚拟化支持（Intel VT或AMD-V），使用Qemu来虚拟硬件。如主板、IDE等。
+PV IO速度要比HVM要高
+
 
