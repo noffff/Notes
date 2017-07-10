@@ -1,0 +1,30 @@
+安装完XEN后，可以通过xl info来查看相关信息。可以参照xl.cfg文件编写虚机的配置文件。
+具体内容可以参照CentOS wiki
+https://wiki.centos.org/HowTos/Xen/Xen4QuickStart#head-6997439b684f690d527e9edc14154b597c3389f3
+安装分为三个步骤
+        1.安装内核
+        2.创建Xen网桥
+        3.配置虚机配置文件
+1.############################安装内核###################################################
+	安装源 # yum -y install centos-release-xen
+	升级   # yum update
+	安装xen# yum -y install xen
+	安装完后可以检查grub中是否多了xen相关的内核
+################################################################################
+
+2.##############################创建网桥############################################
+	创建网桥主要是为了使Xen的Guest能够正常通信
+	两种方式，1 命令行与NetworkManager交互进行配置
+		  2 创建相应的配置文件
+	1.命令行交互
+		nmcli con add type bridge con-name {Bridge-name} ifname {Bridge-name}
+		nmcli con modify {Bridge-name} bridge.stp no
+		nmcli con modify {Bridge-name} bridge.hello-time 0
+		nmcli con modify {主机要被接入桥的网卡} connection.master {Bridge-name} connection.slave-type bridge
+	2.配置文件
+	
+################################################################################
+
+3.################################################################################
+
+################################################################################
