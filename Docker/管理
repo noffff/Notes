@@ -1,0 +1,50 @@
+资源管理：
+	内存限制:
+		超出主机内存内核抛出"OOME",内核开始杀进程来释放内存。如果误杀进程会造成严重的后果。而Docker守护进程可以通过调整容器的OOM的\
+		优先级,在需要释放内存资源时，可以按照容器的OOM优先级来杀。--oom-score-adj --oom-disable-kill
+		内存限制的参数 -m/--memory。具体可见docker run --help |grep memory
+	CPU:
+		通常对CFS进行配置限制。1.13版本开始，能够设置realtime scheduler，
+		--cpus=可以使用的cpu 等价于1.12版本之前的（CPU-quota/CPU-period），--cpu-period=指定CPU CFS调度的周期，单位是微秒，默认1s。
+		相关内容可以查看help文档.CPU-quota 每微秒容器能够访问CPU的次数。
+
+
+一般情况下Docker守护进程挂断，运行的容器也会关闭。从1.12版本开始，可以配置守护进程挂掉，容器仍然跑着。
+	通过/etc/docker/daemon.json文件增加“live-restore:true”参数开启（不需要重启docker）,运行时也可以加上"--live-restore"参数
+	{
+	"live-restore": true
+	}
+指定Docker 仓库地址:
+	/etc/docker/daemon.json 
+	{
+	  "registry-mirrors": ["https://<my-docker-mirror-host>"]
+	}
+
+Docker Registry
+	用来存储Docker镜像的，可拓展的应用。
+	搭建较为简单
+	docker run -d -p 5000:5000 --name registry registry:2
+	将拉去的镜像传入自己仓库步骤:
+		1.# docker pull ubuntu
+		2.# docker tag ubuntu localhost:5000/ubuntu
+		3.# docker push localhost:5000/ubuntu
+	对于其设置在run的时候一般使用ENV指令，也可以用配置文件（YML格式）
+	比如更改仓库存储路径，可以使用该环境变量"REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/somewhere"
+	docker run时指定registry的配置文件冒号前时宿主机。 -v `pwd`/config.yml:/etc/docker/registry/config.yml
+	具体配置内容解释可看
+	https://docs.docker.com/registry/configuration/#overriding-the-entire-configuration-file
+	仓库认证方式有三种：
+		1.silly：只适用于开发环境，只会检查HTTP头的“Authorization”，没有头的话会denied
+		 可配置的响应参数:
+		 realm、service
+			realm：认证服务地址 service：正在被认证的仓库服务地址
+		2.token
+			可以将认证机制从仓库中分离出来，能够提高安全等级。
+		 可配置的响应参数：
+		  relam service 
+		  issuer：token 用户的名字，会被插入到token        rootcerbundle：证书路径
+		一个完整的认证流程，认证的时候cli初次请求会被仓库401状态码打回，并且返回的头中包含认证的realm地址。
+		https://docs.docker.com/registry/spec/auth/token/
+		3.htpasswd
+		  允许配置一个基于Apache htpasswd文件的认证方式
+
