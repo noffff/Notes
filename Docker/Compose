@@ -1,0 +1,7 @@
+类似于编排的Docker组件。能够定义多个容器的相互结构
+YML语法
+
+三个要求：
+	1.支持Dockerfile
+	2.将app写到docker-compose.yml
+	3.执行docker

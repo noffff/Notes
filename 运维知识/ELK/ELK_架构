@@ -1,0 +1,117 @@
+几大组件：
+	1.Kibana：展示界面
+	2.Elasticsearch 查找、分析日志的引擎
+	3.Beats      收集日志的系统，将主机数据发送到Logstash
+	4.Logstash   通过拓展插件动态收集数据。通常使用Filebeat（Beat）将日志发送给Logstash,Logstash端有一个Beats input插件用来接收Beat发
+		     出的信息。
+安装顺序，因为每个组件可能都会向其他组件发数据。例如3会向1发数据。
+	0.JDK(OpenJDK) yum install java-1.8.0-openjdk | apt-get install openjdk-8-jre
+	1.Elasticsearch
+	2.Kibana(跑着Node.js) 主版本必须一致，kibana的次版本不能高于Ela
+	3.Logstash
+	4.Beats
+	5.Elasticsearch Hadoop
+
+1.Ela 安装成功后，访问9200端口 会返回一系列信息。
+		两个配置文件：
+			1.Elasticsearch.yml  Elasticsearch服务配置文件
+			2.log4j2.properties  Elasticsearch日志收集的配置
+			在log4j2的配置文件中，有三种较为重要的属性
+			${sys:es.logs.base_path}    解析日志位置 
+			${sys:es.logs.cluster_name} 集群名字，默认将其作为日志的前缀
+			${sys:es.logs.node_name}    解析节点名
+			通过这三个属性可以定位到日志的位置。
+			比如说在集群为"A",path.logs为"/var/log/B" name 日志就会解析为"/var/log/B/A.log"
+	Master-eligible node：
+			node.master属性设为true(默认)，可以控制集群
+	Data node：
+			node.data属性为true(默认)，保存数据，执行对数据的相关操作
+	Ingest node：
+			node.ingest属性设为true(默认)。能够将其存入标记的文档。如果负载较重，要有独立的节点。
+	Tribe node：
+			能够将多个集群的client汇总到一块。
+	Shard：分片是最小的工作单元。
+	Cluster：master节点中重要的功能之一，决定节点的分片分配，分片在节点间的移动等工作
+	Transport Client是连接远端Elasticsearch 集群的传输模块。
+	集群中的每个节点都可以处理HTTP和 Transport。Transport层只处理 节点间的同学和Java TransportClient。HTTP层负责外部
+	的Result Client
+	一个节点加入到集群时，需要知道集群中其他节点，ela的配置文件的"discovery.zen.ping.unicast.hosts"字段可以
+	设置待加入节点可以初始化联系的集群中现有的节点。
+	容器运行Ela 需要在docker run时就要指定相关参数如memlock、max file descriptors、vm.max_map_count。其中memlocal如果不开boot memlock则不需要调整，其他两项容器运行的默认值不满足需求
+	如果不修改报错
+		[2] bootstrap checks failed
+		[1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65536]
+		[2]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+	
+	
+	必配参数：
+		path.data and path.logs
+		cluster.name
+		node.name
+		bootstrap.memory_lock 对于这个参数的设置，需要修改系统的MEM_LOCK 具体内容可参考
+		https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-system-settings.html#sysconfig
+		network.host
+		discovery.zen.ping.unicast.hosts
+		discovery.zen.minimum_master_nodes
+2.Kibana  5601
+	安装成功后，可以访问url:5601/status 来查看状态。
+	
+3.Logstash
+	需要两个值 INPUT和OUTPUT 中间可选一个"filter"引擎。 
+	检测Logstash是否成功可以使用
+	logstash -e 'input { stdin { } } output { stdout {} }'方法，等初始化成功后，输入'hellow world' 会在console输出
+	工作流程：
+		input端产生事件，filter对其作出修改(也可不改)，output将其定向发送到某地。input和output支持编码操作。
+			常用的作为Input工具：
+				1.file:文件操作 类似于 tail -0F
+				2.syslog:从syslog的514端口接收日志信息
+				3.redis:从redis中取数据，redis也算是个中间件
+				4.beats:通过filebeat进行操作
+			https://www.elastic.co/guide/en/logstash/current/input-plugins.html
+		Filter中间过滤器，运行在Logstash管道的中部
+			常用的Filter插件有:
+				1.grok
+				2.mutate
+				3.drop
+				4.clone
+				5.geoip
+			https://www.elastic.co/guide/en/logstash/current/filter-plugins.html
+		Output管道的最后，进行输出。能同时对多点进行输出。
+			常见的Output端工具有:
+				1.elasticsearch:如果计划将日志高效的、方便查询的进行存储。
+				2.file:将数据写入盘中
+				3.graphite:http://graphite.readthedocs.io/en/latest/
+				4.statsd:
+			https://www.elastic.co/guide/en/logstash/current/output-plugins.html
+		Codecs编码器
+			常见的有:
+				json
+				multiline
+			https://www.elastic.co/guide/en/logstash/current/codec-plugins.html
+		
+4.Filebeat
+	Filebeat是一个agent，用来传输本地节点的日志。能够针对指定文件、目录将日志转发出去。
+	它能够启动多个prospectors监测日志，每个prospectors会分别对应一个harvester。每个harvester处理一个文件，将所以harvester处理得当的新内容
+	都汇总到spooler中，然后统一输出出去。
+	配置完成后，通过
+		./filebeat -configtest -e  运行测试配置文件是否正常。
+	filebeats.yml 权限501
+	可以根据正在处理当前事件的字段值，创建 字符串格式。变了名被放在"{}"中，格式如同 "{<accessor>:default value}"。字段值可以通过
+	'[filedname]'访问。还可以指定默认值 当 没有字段值 时 替换使用。当然也可以以使用 +FORMART 语法来使用存在 @timestamp字段的值。
+	安装之后会记录每个日志文件以及其偏移量。如果想重新载入修改其偏移量即可。
+	
+	Index Templates
+		可以定义一个这样的模板，包含各种设置，映射等等。当创建一个新的索引时，能够自动应用。只在创建时生效，创建后模板的改变对这个索
+		引没有影响。创建完成后，Elasticsearch可以针对这样设置来针对各段进行分析。
+		启动Index Template 两种方式：配置文件中，手动。
+			默认情况下，会自动加载Template文件 fields.yml。如果开启Elasticsearch Output，可以在filebeat.yml中调整加载的
+			template。
+				output.elasticsearch:
+				  hosts: ["localhost:9200"]
+				  template.name: "filebeat"
+				  template.fields: "fields.yml"
+				  template.overwrite: false
+			注释Elasticsearch段下的 template 会关闭自动加载
+			使用
+				curl -XDELETE 'http://URL:9200/filebeat-*'  来删除所有的Elasticsearch中的索引。
+				curl -H 'Content-Type: application/json' -XPUT 'http://localhost:9200/_template/filebeat' -d@/etc/filebeat/filebeat.template.json 将 template.json 模板推入

@@ -1,0 +1,2 @@
+Web监控需要POST请求时，可以先在游览器访问，然后根据response中的request POST header进行Zabbix Web Header中POST参数的定义
+如果是空body的情况，使用curl -XPOST URL进行

@@ -1,0 +1,16 @@
+HTTP:超文本传输协议，是世界范围交换信息数据的基础协议，是一个应用层协议。
+超文本（hypertext）:是在节点间的包含了文本的超链接形式的文本。HTTP协议就是去传输和交换超文本的协议。
+HTTP协议是 在cs架构中是request-response协议。Client端提交一个HTML请求给Server端，Server端给其一个Respone。
+Response的body中还可以包含request的信息。
+request中的 user agent 字段根游览器/访问设备有关
+HTTP 1.0：相同服务的，每一个资源请求都是独立的，
+HTTP 1.1：使用一个连接，进行多次下载请求资源服务，节省TCP连接的建立。
+HTTP 1.0版本建立了 GET POST HEAD三种方法
+HTTP 1.1版本补充了OPTIONS PUT DELETE TRACE CONNECT五种新方法
+	GET:
+	    GET方法是请求已有的资源，使用该方法 检索数据没有其他影响。
+       POST:
+	    POST请求将一些内容附加到请求的URL上。
+	    使用POST 一般编码格式就为application/x-www-form-urlencoded
+	
+

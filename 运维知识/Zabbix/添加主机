@@ -1,0 +1,11 @@
+1.常规注册
+2.自动发现
+	可以基于几种机制发现
+	1.IP范围
+	2.一些拓展服务，如SSH、TCP、WEB等
+	3.从Zabbix agent收到的信息，只能是未加密的
+	4.从SNMP agent收到信息
+	发现的机制就是按照用户定义的 network discovery 规则，定期的对每一条规则进行检查执行。
+	一条发现规则 通常 由一个 进程执行
+	通过network discovery模块来进行网络服务和IP的检查发现会产生一系列的发现event。
+	
