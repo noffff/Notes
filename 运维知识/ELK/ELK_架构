@@ -115,3 +115,8 @@
 			使用
 				curl -XDELETE 'http://URL:9200/filebeat-*'  来删除所有的Elasticsearch中的索引。
 				curl -H 'Content-Type: application/json' -XPUT 'http://localhost:9200/_template/filebeat' -d@/etc/filebeat/filebeat.template.json 将 template.json 模板推入
+			自动重置配置文件：
+				filebeat.config.prospectors:
+				  path: configs/*.yml
+				  reload.enabled: true
+				  reload.period: 10s	
