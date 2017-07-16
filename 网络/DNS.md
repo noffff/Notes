@@ -9,9 +9,9 @@ lay2=>operation: 2
 lay3=>operation: 1
 lay4=>operation: 3
 lay5=>operation: 2
-st->op1->op2
-op2->op3->op4
-op4->op5->e
+st->lay1->lay2
+lay2->lay3->lay4
+lay4->lay5->e
 ```
 IP:2.3.1.2
 一个独立管理的DNS子树成为区域"zone",最常见的区域是二级域"xx.edu|cn..."，可以根据不同功能将二级域分为更小的域。
