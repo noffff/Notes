@@ -14,6 +14,17 @@ st->lay1->lay2
 lay2->lay3->lay4
 lay4->lay5->e
 ```
+```flow
+st=>start: Start
+e=>end: End
+op1=>operation: My Operation
+sub1=>subroutine: My Subroutine
+cond=>condition: Yes or No?
+io=>inputoutput: catch something...
+st->op1->cond
+cond(yes)->io->e
+cond(no)->sub1(right)->op1
+```
 IP:2.3.1.2
 一个独立管理的DNS子树成为区域"zone",最常见的区域是二级域"xx.edu|cn..."，可以根据不同功能将二级域分为更小的域。
 - DNS查询/响应报文格式:
