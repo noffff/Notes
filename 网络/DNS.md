@@ -2,13 +2,13 @@ DNS是基于TCP/IP的分布式数据库，每个节点保存自己相关网址�
 DNS命名结构结构类似于树。顶端为根(.)，然而域名的结合是从下端至根。每一节点通过"."分隔。从下到上依次对应 域名的从左到右。<br>
 DNS命名结构中有一个特殊的顶级域“arpa”、该域是做地址到名字转换使用的。其结构为<br>
 ```flow
-st=start:arpa
-e=>end:2
-op1=>operation:in-addr
-op2=>operation:2
-op3=>operation:1
-op4=>operation:3
-op5=>operation:2
+st=start: arpa
+e=>end: 2
+lay1=>operation: in-addr
+lay2=>operation: 2
+lay3=>operation: 1
+lay4=>operation: 3
+lay5=>operation: 2
 st->op1->op2
 op2->op3->op4
 op4->op5->e
