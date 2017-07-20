@@ -1,0 +1,26 @@
+# 宏(macros):  
+	能够将一些列操作，集成到一个，其查找顺序 Host-> templates-> General
+ - 宏名只能用A-Z0-9定义 格式 {$MACROS_NAME}=values
+
+# key
+ - key name只能用A-Za-z0-9_-. 引用格式 {KEY_NAME}
+
+# Item
+
+# Get值-External
+  - zabbix-get值时需要在被监控端指定需要脚本及监控端调用的key值<br>
+    - 默认在zabbix_agent.conf中定义<br>
+    - 不引用参数:UserParameter:<Key_name>,<command><br>
+    - 接收参数:UserParameter:<Key_name[*]>,<command $1 $2...><br> *代表无限接收参数,$1这些代表位置参数。如果有类似awk {print $1}的操作把$1写为$$1
+    脚本或命令过多时，可以将该项独立出来，在agent.conf中Include 相关配置文件进行该操作。
+# Sender值-Trap check
+  - agent端执行zabbix-sender 发送的值<br>
+  - sender发送时会指定源主机及 key 值。server端利用主机 和 key值来分辨提取该值。
+# Discovery
+  - Discovery status
+    - Host Discovered:主机的所有服务都stop，然后有一个服务启动。就是第一次发现主机、服务
+    - Host Up:有一个服务不间断的再跑
+    - Service Discovered：服务从down变为up、或者是第一次发现
+    - Service Up：服务正常运行。
+# condition
+  - 一类的条件只能有一个。如果多个 只能or
