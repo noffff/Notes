@@ -122,7 +122,7 @@ UDP头包只有3层
   - 1.查找是否有与自己相同的IP地址 
   - 2.发送免费ARP的主机正好改变自己硬件地址（更换网卡）
 
-# ICMP报文
+## ICMP报文
 ![ICMP的结构](http://www.embeddedlinux.org.cn/linux_net/0596002556/images/understandlni_2501.jpg)
 - 第一层	
   - 8位类型 
