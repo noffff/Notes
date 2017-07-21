@@ -1,1 +1,8 @@
 大括号拓展{,}：
+运行Inotify时要查看
+sysctl -a |grep fs.inotify
+查看下列三个值
+   fs.inotify.max_queued_events = 16384 队列中event最大数
+   fs.inotify.max_user_instances = 128  一个用户可创建的实例数量
+   fs.inotify.max_user_watches = 8192  监控最大目录
+可根据需求上调
