@@ -13,6 +13,7 @@
   - idle -time 达到这个值就提交
 - drop 能够根据指定条件排除event，field。也能在满足指定条件时加上field。
   - drop event
+==
 ```
 processors:
  - drop_event:
@@ -38,8 +39,10 @@ processors:
         condition
      fields: ["field1", "field2", ...]
 ```
+
 ## Conditions
-每个判断条件都会收到字段，对每个字段处理。如果一个条件处理多个字段使用**AND**
+==
+> 每个判断条件都会收到字段，对每个字段处理。如果一个条件处理多个字段使用**AND**
 ```
 processors:
  - <processor_name>:
