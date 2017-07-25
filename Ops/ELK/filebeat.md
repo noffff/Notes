@@ -13,7 +13,7 @@
   - idle -time 达到这个值就提交
 - drop 能够根据指定条件排除event，field。也能在满足指定条件时加上field。
   - drop event
-==
+----
 ```
 processors:
  - drop_event:
@@ -117,7 +117,7 @@ filebeat.prospectors:
     paths:
       - /var/log/*/*.log 该路径不包括/var/log/*的文件
 ## 常用的参数
-==
+----
 - 目前type类型
   - log、stdin、redis
 - paths:
@@ -128,7 +128,7 @@ filebeat.prospectors:
   - 读文件的编码
 - exclude_lines:
   - 排除的行，正则。如果开启了multiline，会在组成单独的一行前，进行过滤。下同
-  - 正则![正则](https://www.elastic.co/guide/en/beats/filebeat/master/regexp-support.html)
+  - [正则](https://www.elastic.co/guide/en/beats/filebeat/master/regexp-support.html)
 - include_lines:
   - 保留的行，默认全保留。
 > 如果上述exclude和include同时开启，那么处理顺序为先include 再 exclude
@@ -176,7 +176,7 @@ fields_under_root: true
 	有各种close类别，是根据对其日志收集完后的时间来做判据
 
 ### json
-==
+----
 > 将JSON格式信息解码。filebeats是论行处理，如果每一行都是一个JSON对象，那么就正好解析了。解码在行和多行过滤之前
 ```
 eg:
@@ -199,4 +199,4 @@ eg:
 
 - spool_size:
 	spool的大小。
-![**More More**](https://www.elastic.co/guide/en/beats/filebeat/master/configuration-filebeat-options.html)
+[**More More**](https://www.elastic.co/guide/en/beats/filebeat/master/configuration-filebeat-options.html)
