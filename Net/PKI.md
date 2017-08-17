@@ -6,6 +6,14 @@ PKI的用来保证正确注册的组织叫做**RA**.RA负责接收对于数字�
 每一个证书实体的CA域必须是独一无二的。第三方**VA**提供的实体信息可以代替CA
 VA提供用来确认数字证书是否满足X.509和RFC 5280标准的每一个机制
 - CRL 证书吊销列表
+CA证书时包括了一个公钥,对应于每一个服务私钥。
+CA证书的数字签名通常来自于一个可以的第三方机构。
+游览器只有一个leaf 证书(针对服务的证书)通常是不够的，因为游览器是不知道其中间的证书，因此需要子证书包含这些。这一系列证书在游览器中叫证书bundle。
+- 签发流程
+  - 将用户身份信息、用户公钥信息。按照特定格式组成数据D
+  - 用摘要算法对数据D进行计算得到摘要H
+  - 使用CA私钥对摘要H进行加密得到数字签名S
+  - 将用户信息、用户公钥信息、数字签名S按照特定格式组合成数字证书
 ## PKI组成
 - CA
 `存储、分发、标记数字证书`
@@ -22,6 +30,7 @@ VA提供用来确认数字证书是否满足X.509和RFC 5280标准的每一个�
   - ca.key.pem 根秘钥
   - ca.cert.pem 根证书
 上述这一对构成CA。
+根证书通过自己的私钥自签。<br>
 通常情况下，根CA不会直接对服务或客户端证书打标签。根CA证书经常用来生成中间级的CA。<br>这些中间级的证书会代替根CA来认证下级服务。这样子root-key可以离线的方式进行操作，保证了安全。<br>
 创建根证书时必须要有一个能让OpenSSL使用的配置文件。
 (配置文件介绍)[https://jamielinux.com/docs/openssl-certificate-authority/create-the-root-pair.html]
@@ -117,7 +126,7 @@ chmod 444 intermediate/certs/ca-chain.cert.pem
 # chmod 400 intermediate/private/www.example.com.key.pem
 ```
 - 创建CSR证书
-使用私钥创建**证书签发请求**(CSR)**<br>该证书的CA信息可以与中间CA的不同。对于**服务端证书**来说，Common Name必须是服务的全域名。对于**客户端证书**其可以是任一独立的值。Common Name不能与根或中间证书一样
+使用私钥创建**证书签发请求**(CSR)**<br>该证书的CA信息可以与中间CA的不同。对于**服务端证书**来说，Common Name必须是服务的全域名<br>“in order for a browser to trust an SSL Certificate, and establish an SSL/TLS session without security warnings, the SSL Certificate must contain the domain name of website using it”。<br>对于**客户端证书**其可以是任一独立的值。Common Name不能与根或中间证书一样
 ```
 openssl req -config intermediate/openssl.cnf \
       -key intermediate/private/www.example.com.key.pem \
@@ -148,3 +157,11 @@ openssl verify -CAfile intermediate/certs/ca-chain.cert.pem \
 X509证书包含一个公钥、一个身份信息（主机名、组织名、个体名）。也可以使用CA签名或者自己签名。<br>
 可以利用该证书包含的公钥域使用相应私钥处理过的文档和第三方进行安全通信。<br>
 除了规定证书的形式外，X.509也指定了在CRL**证书吊销列表**的相关信息，用来认证哪些证书作废。
+- CA bundle
+```一个包含了根和中间证书的文件。域证书加上CA bundle构成证书链,这个链用来提高证书与web游览器的兼容性，用来减少通过游览器或其他Client端访识别证书时而引起的安全警告```
+
+## CA
+游览器、操作系统、移动设备认证的授权的CA成员项目，一个CA机构必须符合复杂的详细的标准才能成为一员。一旦成为了一名合法的CA机构就可以颁发被游览器信赖的SSL证书。目前有较少的合法的CA机构。CA的过程越长，也就有越多的游览器和设备信赖其CA分发。证书必须有向后的兼容性比如老的游览器和移动设备。
+游览器和设备会通过存储**根证书**来信赖一个CA。一般在游览器和设备安装之前会预装一部分CA库。
+CA使用这些预装的根证书来颁发中间根证书(Intermediate CA)和终端数字证书。CA收到一个证书请求，验证应用程序，颁发证书并且发布颁发证书的有效状态。
+
