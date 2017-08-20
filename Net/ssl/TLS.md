@@ -46,6 +46,7 @@ Extensions 扩展的一些信息
 ![图解](http://www.garykessler.net/library/images/crypto_ssl.gif)
 #### 简短握手
 > 一般用来恢复会话，节省了完整握手的资源消耗。
+
 目前采用方法为**会话票证**。服务端不用保存任何信息。所有信息都保存在客户端<br>
 希望会话的客户端会将适当的会话ID放入客户端的sayhello消息提交。如果服务端同一恢复<br>
 就会将相同的ID放入放入Server-sayhello。然后会用之前协商的主密钥生成新的密钥。切换为加密模式。发送Finished信息<br>
