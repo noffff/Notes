@@ -41,32 +41,54 @@ DN包括很多可选字段，根据不同实体使用的不同<br>
 - 公钥
 包含公钥，使用者实体的公钥
 ## 证书扩展字段
-扩展字段包含唯一的**对象标识符**OID、关键扩展标志器以及ASN.1值
 > 如果某个扩展字段被设为关键扩展，那么客户端必须能够解析和处理。
-否则拒绝证书
+否则拒绝证书<br>
+X509v3 extensions:
+```
+X509v3 Extended Key Usage:
+    TLS Web Server Authentication
+X509v3 Basic Constraints: critical
+    CA:FALSE
+X509v3 Subject Key Identifier:
+    D2:E6:0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx87:FA:DD
+X509v3 Authority Key Identifier:
+    keyid:C0:C3:1F:7E:B8:xxx:27:xxx:A7:48:5A:12xxxxxxxx56:F5:C7
 
+Authority Information Access:
+    OCSP - URI:http://ocsp.xxxxxx.cn
+
+X509v3 Subject Alternative Name:
+    DNS:xxxx.xxxx.com
+X509v3 CRL Distribution Points:
+
+    Full Name:
+      URI:http://crl.xxxxx.cn/crl
+```
+扩展字段包含唯一的**对象标识符**OID、关键扩展标志器以及ASN.1值
 - 使用者可选名称
 用于替换**使用者**字段，能够处理多个域名或其它身份信息<br>
 简而言之就是一个证书通过这个字段可以指定多个服务地址
 - 名称约束
 能够限制签发证书对象的功能和权限
-- 基础约束
-表明证书是否为**CA证书**，只有CA证书级别的才能签发服务实体证书。<br>
+- 基础约束(Basic Constraints)
+表明证书是否为**CA证书**，只有CA证书级别才能对其他证书签名。<br>
 并且通过**路径长度**约束字段，限制二级CA证书向下签发证书的深度<br>
-- 密钥用法
+- 密钥用法(Key usage)扩展密钥用法(extended key usage)
 设置证书应用的场景。CA证书一般为**证书签名照**、**CRL签名者**
-- 扩展密钥用法
-
 - 证书策略
 包含一个或多个策略，一个最后的子证书至少包含一条策略，表明证书在何种条款下签发
-- CRL分发点
+- CRL分发点(CRL Distribution Points)
 通过该字段确定CRL的LDAP或HTTP URL地址，一个证书最少有一个CRL或OCSP信息
-- 颁发机构信息访问
+- 颁发机构信息访问(Authority Information Access,AOA)
 该字段提供如何访问签发CA提供的额外访问信息和服务，比如OCSP url
-- 使用者密钥标识符
+- 使用者密钥标识符(Subject Key Identifier)
 唯一值，识别包含特别公钥的证书。所有证书必须都有该字段。该值要与CA签发证书的授权密钥标识符值一致。
 - 授权密钥标识符
 签发此证书的CA的唯一标识符。用于在构建证书链时找到颁发者的证书
+- 颁发机构密钥标识符(Authority Key Identifier)
+唯一值，必须与颁发机构的使用者密钥标识符的信息一致<br>
+
+> CRL地址不用https，因为如果用了https会面临先有鸡先有蛋问题
 ## 证书链
 多数情况下，一个子证书的签发是经过几层CA的。所以说为了认证该子证书，只有单一的CA是不能验证的。<br>
 所以服务器需要提供一个证书链来一步一步验证到可信根证书<br>
@@ -91,3 +113,88 @@ EV 更加严格的要求验证身份和真实性，解决OV前后不一致。
 CRL会随着时间增加，越来越大 查询越来越慢
 - OCSP 在线证书状态协议
 支持实时查询。允许信赖方获得一张证书的吊销信息。
+
+## 创建证书
+证书名要不能匹配域名的不同变体<br>
+如www.test.com不能匹配test.com。如果有DNS解析指向域名，证书要包括这个DNS指向的域名<br>
+泛域名：*.test.com
+使用开源的OpenSSL
+生成加强版的私钥<br>
+创建证书签名申请CSR并发送给CA<br>
+在WEB服务器安装CA提供的证书<br>
+等等
+- 生成密钥
+密钥算法:RSA\DSA\ECDSA
+密钥长度:RSA 2048\ECDSA 256
+密码:该密码只是在储存副本密钥等情况有实际用处。因为应用通过密码验证后会把私钥明文保存在程序内存中
+`openssl genrsa -aes128 -out one.key 2048`
+- 创建证书签名申请
+创建的CSR是用来提交给CA的正式申请<br>
+该申请包含申请证书的实体(服务)公钥以及实体的某些信息。该数据会成为证书一部分<br>
+CSR用其包含的公钥所对应的私钥进行签名
+`openssl req -new one.key -out one.crs`
+
+如果需要创建多个主机名有效的证书<br>
+两种方法
+- 泛域名
+*.test.com
+- x509的**使用者可选名称**(subject alternative name)
+在该字段中列出所有要使用的主机名<br>
+一般讲该字段包含的内容写入文件如
+one.ext
+```
+subjectAltName = DNS:*.test.com,DNS:test.com
+```
+> 真正环境使用时会设置顶级域名以及其泛域名两项
+`openssl x509 -req -days 365 -in one.csr -signkey one.key -out one.crt -extfile one.ext`
+
+## 创建私人CA
+一般根CA下有intermediate CA用来进行签发实体证书<br>
+创建私人CA比较复杂，有配置文件比较简单<br>
+[配置文件](https://github.com/ivanr/bulletproof-tls/blob/master/private-ca/root-ca.conf)
+- 根CA
+```
+# mkdir certs db private
+# echo 1001 > db/crlnumber
+# openssl rand -hex 16 >db/serial
+```
+  - 生成根CSR
+`# openssl req -new config root.conf -out root-ca/root-ca.csr -keyout root-ca/private/root-ca.key`
+  - 根自签
+`# openssl ca -selfsign -config root.conf -in root-ca.csr -out root-ca.crt -extensions ca_ext`
+此时会生成db/index文件，包含证书信息的明文，每行一个证书<br>
+```
+每行6项
+1.状态标记 V有效,R吊销,E过期
+2.过期时间YMDHMSZ格式
+3.吊销日期 如果没有为空
+4.序列号 16进制
+5.文件路径
+6.可分辨名称
+```
+  - 为CA生成CRL
+`# openssl ca -gencrl -config root.conf -out root-ca.crl`
+  - 吊销证书
+使用revoke需要一个副本，不过如果证书都在一个位置。只用序列号就可以<br>
+`openssl ca -config root.conf -revoke certs/xxx.pem -crl_reason xxx(crl_reason有几个规定的值)`
+  - 生成用于给OCSP签名证书
+OCSP证书无法吊销，所以其生命周期要比较短
+```
+# openssl req -new -newkey rsa:2048 -subj "/C=CN/O=test/CN=OCSP Root Responder"\
+ -keyout private/root-ocsp.key  -out root-ocsp.csr
+# openssl ca -config root.conf -in root-ocsp.csr -out root-ocsp.crt \
+-extensions ocsp_ext -days 30
+```
+**启动根CA的OCSP服务**<br>
+`openssl ocsp -port 9080 -index db/index -rsigner root-ocsp.crt -rkey private/root-ocsp.key -CA root-ca.crt -text`
+**验证证书是否吊销**<br>
+`openssl ocsp -issuer root-ca.crt -CAfile root-ca.crt -cert root-ocsp.crt -url http://localhost:9080`
+- 二级CA
+[地址](://github.com/ivanr/bulletproof-tls/blob/master/private-ca/sub-ca.conf)
+  - 生成二级CA
+```
+生成二级CA 的CSR
+openssl req -new -config inter.conf -out sub-ca.cssr -keyout private/sub-ca.key
+根证书签名
+openssl ca -config root.conf   -in sub/sub-ca.cssr -out sub/sub-ca.crt -extensions sub_ca_ext
+```
