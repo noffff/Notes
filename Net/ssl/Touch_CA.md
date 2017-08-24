@@ -11,7 +11,7 @@
   - 生成根CSR<br>
 `# openssl req -new config root.conf -out root-ca/root-ca.csr -keyout root-ca/private/root-ca.key`
   - 根自签<br>
-`# openssl ca -selfsign -config root.conf -in root-ca.csr -out root-ca.crt -extensions ca_ext`
+`# openssl ca -selfsign -config root.conf -in root-ca.csr -out root-ca.crt -extensions ca_ext`<br>
 此时会生成db/index文件，包含证书信息的明文，每行一个证书<br>
 ```
 每行6项
