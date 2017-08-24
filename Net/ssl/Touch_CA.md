@@ -41,10 +41,9 @@
 -extensions ocsp_ext -days 30
 OCSP证书无法吊销，所以其生命周期要比较短
 ```
-- 启动根CA的OCSP服务
+- 启动根CA的OCSP服务<br>
 `openssl ocsp -port 9080 -index db/index -rsigner root-ocsp.crt -rkey private/root-ocsp.key -CA root-ca.crt -text`<br>
-**openssl ocsp sever只是测试的程序,only useful for test and demonstration purposes<br>并且一次只能支持一次查询。当出现Invalid request 
-Reply Error: malformedRequest (1)时表明可能请求方法不对。其不支持GET方法**
+**openssl ocsp sever只是测试的程序,不能支持服务使用,其还不支持GET方法**
 
 - 验证证书是否吊销
 `openssl ocsp -issuer root-ca.crt -CAfile root-ca.crt -cert root-ocsp.crt -url http://localhost:9080`
