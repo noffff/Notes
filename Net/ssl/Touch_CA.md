@@ -3,8 +3,9 @@
 一般根CA下有intermediate CA用来进行签发实体证书<br>
 创建私人CA比较复杂，有配置文件比较简单<br>
 [配置文件](https://github.com/ivanr/bulletproof-tls/blob/master/private-ca/root-ca.conf)
----
+
 ### 根CA
+---
 ```
 # mkdir certs db private
 # echo 1001 > db/crlnumber
@@ -24,8 +25,9 @@
 5.文件路径
 6.可分辨名称
 ```
----
+
 ### 创建OCSP服务
+---
 - 为CA生成CRL<br>
 `# openssl ca -gencrl -config root.conf -out root-ca.crl`
 - 吊销证书<br>
@@ -47,8 +49,9 @@ Reply Error: malformedRequest (1)时表明可能请求方法不对。其不支�
 - **验证证书是否吊销**
 `openssl ocsp -issuer root-ca.crt -CAfile root-ca.crt -cert root-ocsp.crt -url http://localhost:9080`<br>
 > OCSP响应验证需要完整的证书链，-CAfile指定 
----
+
 ### 创建二级CA
+---
 [配置地址](https://github.com/ivanr/bulletproof-tls/blob/master/private-ca/sub-ca.conf)
 - 生成二级CA<br>
 ```
