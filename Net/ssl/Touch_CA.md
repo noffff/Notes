@@ -42,12 +42,12 @@
 OCSP证书无法吊销，所以其生命周期要比较短
 ```
 - 启动根CA的OCSP服务
-`openssl ocsp -port 9080 -index db/index -rsigner root-ocsp.crt -rkey private/root-ocsp.key -CA root-ca.crt -text`
-> openssl ocsp sever只是测试的程序，**only useful for test and demonstration purposes**,一次只能支持一次查询。当出现Invalid request 
-Reply Error: malformedRequest (1)时表明可能请求方法不对。其不支持GET
+`openssl ocsp -port 9080 -index db/index -rsigner root-ocsp.crt -rkey private/root-ocsp.key -CA root-ca.crt -text`<br>
+**openssl ocsp sever只是测试的程序,only useful for test and demonstration purposes<br>并且一次只能支持一次查询。当出现Invalid request 
+Reply Error: malformedRequest (1)时表明可能请求方法不对。其不支持GET方法**
 
-- **验证证书是否吊销**
-`openssl ocsp -issuer root-ca.crt -CAfile root-ca.crt -cert root-ocsp.crt -url http://localhost:9080`<br>
+- 验证证书是否吊销
+`openssl ocsp -issuer root-ca.crt -CAfile root-ca.crt -cert root-ocsp.crt -url http://localhost:9080`
 > OCSP响应验证需要完整的证书链，-CAfile指定 
 
 ### 创建二级CA
