@@ -21,15 +21,64 @@ shard的分布以及将一个扩散到多个shard的查询请求整合返回的�
 为了防止错误减少故障率,提高可用性，Elasticsearch支持对索引的shard创建副本，这种叫做replica shard  
 - Replica提供了shard/node的高可用性，所以相同的replica node是不能分配到相同节点。
 - 可以将搜索等请求直接放在replica中，提高吞吐量
+
 每个索引可以划分为多个shards。一个索引可以有0到多个副本，一旦创建了副本就有primary shard和replica shard  
 shards和replica的数量可以在索引被建立前定义，在索引创建后，可以动态改变replica的值，但是不能改变已经生效的shards  
-
 每个shard都是一个Lucene索引，一个Lucene索引的doc是有最大限制。其最大值为**2,147,483,519 (= Integer.MAX_VALUE - 128) **,可以通过_cat/shards API查询
+---
 ## 相关参数设置
 Elasticsearch是基于java，运用JVM  
+### heap size
 要对Elasticsearch的内存进行限制，就要通过限制JVM来设置  
-JVM的初始化内存大小与最大heap size是不一致的，可能会因为JVM动态调整内存大小引起卡顿。 为了避免这个问题，要将JVM初始内存设为最大heap size一致。此外，如果"bootstrap.memory_lock"开启，那么JVM会在启动时将锁定初始化内存大小。 这个前提是初始化大小等于heap size大小，否则无效  
+JVM的初始化内存大小与最大heap size是不一致的，可能会因为JVM动态调整内存大小引起卡顿。 为了避免这个问题，要将JVM初始内存设为最大heap size一致。此外，如果"bootstrap.memory_lock"开启，那么JVM会在启动时将锁定初始化内存大小。 这个前提是初始化大小等于heap size大小，并且用户拥有"memlock unlimited"否则无效  
+"bootstrap.memory_lock"该参数也防止数据交换到磁盘上，在JVM进行垃圾回收时防止磁盘颠簸  
+检测是否开启内存锁
+	'localhost:9200/_nodes?filter_path=**.mlockall&pretty'
+[开启内存锁方法](https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-configuration-memory.html#mlockall)
+
+### 文件描述符
+Elasticsearch需要大量的文件描述符，因为每个shard都是有大量的段和其他文件组成  
+因此要根据集群数据量来修改file descriptor的限制，超出文件描述符限制其结果可能会导致数据的丢失   
+```
+[关闭文件现在的方法](https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-system-settings.html)
+节点最大文件限制
+curl -XGET 'localhost:9200/_nodes/stats/process?filter_path=**.max_file_descriptors&pretty'
+```   
+一般需要将Elasticsearch文件描述符限制提到65536或者更高  
+
+### 最大线程
+Elasticsearch执行请求操作时将请求分成多个阶段，然后将这些阶段放入不同的线程池进行处理  
+Elasticsearch中有多种线程池。Elasticsearch需要能够创建许多进程，最大线程数是为了保证Elasticsearch能够创建足够多的线程用来使用。  
+最大线程数的限制只在Linux中有，至少要允许创建2048个线程  
+设置方法
+	/etc/security/limits.conf nproc
+
+### 设置垃圾收集器
+JDK的JVM有很多种垃圾收集器，"serial collector"适合用于单核CPU的机器或者较小的heap。  
+如果使用这个，对Elasticsearch可以说是毁灭性的。不能用它，默认使用CMS 收集器  
+---
 ## 使用方法
+### 优化
+- 防止索引冲突
+`elasticsearch.yml`
+	rest.action.multi.allow_explicit_index: false
+- Flat 输出
+```
+curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
+输出如下
+{
+  "twitter" : {
+    "settings": {
+      "index.number_of_replicas": "1",
+      "index.number_of_shards": "1",
+      "index.creation_date": "1474389951325",
+      "index.uuid": "n6gzFZTgS664GUfx0Xrpjw",
+      "index.version.created": ...,
+      "index.provided_name" : "twitter"
+    }
+  }
+}
+```
 ### doc操作
 #### 创建doc
 ```
@@ -166,6 +215,26 @@ curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/js
 该方法能够对查询的结果进行过滤  
 #### 删除doc
 	将GET方法换位DELETE方法即可
+##### 通过查询删除
+查询删除时，会返回删除的一个结果也就是快照的东西。并删除真正的数据  
+得到的这个快照就是version conflict。这个数就是通过查询删除的数量  
+在查询删除期间，会有大量的搜索请求按顺序的查找所有匹配的doc来删除。 
+每次找到一批doc，就会有与之对应的一批用来删除的bulk请求。  
+一个搜索请求或bulk请求被拒绝，依照默认策略充实 10次，如果还失败就返回错误  
+- 简单查询删除
+
+- JSON方式的复杂查询删除
+```
+curl -XPOST 'localhost:9200/index_name/_delete_by_query?pretty' -H 'Content-Type: application/json' -d'
+{
+  "query": { 
+    "match": {
+      "message": "some message"
+    }
+  }
+}
+'
+```
 #### 修改doc内容
 ```
 # curl -XPOST 'localhost:9200/index_name/type_name/ID/_update?pretty&pretty' -H 'Content-Type: application/json' -d'

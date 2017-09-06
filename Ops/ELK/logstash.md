@@ -58,15 +58,15 @@ Logstash会为**事件**添加一些额外信息，如@timestamp
   - 字符串
   - 数值
   - 数组
-  - 哈徐
+  - 哈希
 - 条件判断
   - 通常使用事件中字段来进行判定
-  ```
+```
   filter {
      if [type] == "web" {grok {xxxx}}
     }
-  ```
-**上面例子的意思是 当经过 过滤器的事件的type字段值为web时使用grok过滤器处理。**
+```
+**上面例子的意思是 当经过 过滤器的事件的type字段值为web时使用grok过滤器处理。**<br>
 > 对于一些无结构的文本，除了用gork格式化为标准格式，也可以根据其形式将其存入不同的字段中
 ```
 text:
@@ -95,11 +95,11 @@ filter:
     - 目录中创建一个文件
     - 在这个文件中定义自己的需求 
       `类型名 regular expression`
-    ```
+```
     filter {
     grok {
     patterns_dir => ["./patterns"]  //指定定义的文件在哪
     match => { "message" => "%{SYSLOGBASE} %{POSTFIX_QUEUEID:queue_id}: %{GREEDYDATA:syslog_message}" }
    }
    }
-   ```
+```

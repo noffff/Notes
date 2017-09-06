@@ -73,3 +73,7 @@ rcode|返回码字段。默认值为0(无错)<br>3(名字差错)|
 - /etc/resolv.conf
   - nameserver 指定DNS地址
   - domain 默认的域名地址。如果输入的地址不全 默认使用该设置补全域名。 
+
+- SOA (start of Authority)缩写
+- NS (Name server)缩写，后面记录的是DNS服务器数据
+- A (Address) ，后面记录对应的IP
