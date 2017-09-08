@@ -136,6 +136,9 @@ curl -XPUT 'localhost:9200/test?pretty' -H 'Content-Type: application/json' -d'
 	curl -I 'localhost:9200/index_name?pretty'
 
 ### doc操作
+有时候有些数据没有被刷到disk上，会存在translate.log里也不会丢失  
+但是如果想立刻生效可以使用
+	curl -XPOST 'localhost:9200/index_name/_flush/synced?pretty'
 #### 创建doc
 ```
 # curl -XPUT 'localhost:9200/index_name/type_name/ID?pretty&pretty' -H 'Content-Type: application/json' -d'
@@ -436,4 +439,4 @@ curl -XPOST 'localhost:9200/_cluster/reroute?pretty' -H 'Content-Type: applicati
 ```
 > 当一个shard从A节点移动到另一个B，那么B节点上原来的shard会移动到A节点。集群特性。这种情况可以关闭集群的 allocations功能  
 
-### 
+ 
