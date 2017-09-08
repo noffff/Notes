@@ -42,7 +42,7 @@ Elasticsearch需要大量的文件描述符，因为每个shard都是有大量�
 ```
 [关闭文件现在的方法](https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-system-settings.html)
 节点最大文件限制
-curl -XGET 'localhost:9200/_nodes/stats/process?filter_path=**.max_file_descriptors&pretty'
+# curl -XGET 'localhost:9200/_nodes/stats/process?filter_path=**.max_file_descriptors&pretty'
 ```   
 一般需要将Elasticsearch文件描述符限制提到65536或者更高  
 
@@ -64,7 +64,7 @@ JDK的JVM有很多种垃圾收集器，"serial collector"适合用于单核CPU�
 	rest.action.multi.allow_explicit_index: false
 - Flat 输出
 ```
-curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
+# curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
 输出如下
 {
   "twitter" : {
@@ -79,6 +79,62 @@ curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
   }
 }
 ```
+
+### Indices操作
+#### 创建索引
+##### 设定索引属性
+每个索引都有自己的特性，如果需要全局可以设置Template属性  
+- 指定索引属性
+```
+curl -XPUT 'localhost:9200/index_name?pretty' -H 'Content-Type: application/json' -d'
+{
+    "settings" : {
+        "index" : {
+            "number_of_shards" : 3,     # 默认5
+            "number_of_replicas" : 2    # 默认1
+        }
+    }
+}
+'
+```
+[更多详细参数](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html)
+
+##### Template
+创建模板，将创建的索引按照模板进行设置  
+模板包含两部分
+- 简单的匹配Template的部分，决定索引是否用该模板  
+- settings
+- mappings
+[详细内容](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)
+##### 设定映射 Mapping
+映射是定义一个doc的字段存储什么样的内容，并且如何被索引的过程。  
+定义的内容如下  
+- 哪些字符字段应该被视为全文字段
+- 哪些字段包含数字、日期、地理位置
+- doc中的所有字段的值是否应该被`_all`字段索引
+- 日期的格式
+- 自定义规则来控制动态的添加字段
+
+```
+[详细内容](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html#mapping)
+curl -XPUT 'localhost:9200/test?pretty' -H 'Content-Type: application/json' -d'
+{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "mappings" : {
+        "type1" : {
+            "properties" : {
+                "field1" : { "type" : "text" }
+            }
+        }
+    }
+}
+'
+```
+##### 检查索引是否存在
+	curl -I 'localhost:9200/index_name?pretty'
+
 ### doc操作
 #### 创建doc
 ```
@@ -89,6 +145,9 @@ curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
 '
 ```
 #### 查询doc
+cat API能查看集群多个状态  
+使用下列方式能列出所有可执行API
+	curl -XGET 'localhost:9200/_cat?&pretty'
 两种查询方式  
 一种将参数直接通过URL传入  
 一种通过请求body传入
@@ -119,23 +178,23 @@ curl -XGET 'localhost:9200/index_name/_settings?flat_settings=true&pretty'
 JSON格式的查询，类似于DSL  
 ###### match query
 ```
-curl -XGET 'localhost:9200/index_name/_search?pretty' -H 'Content-Type: application/json' -d'
+# curl -XGET 'localhost:9200/index_name/_search?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": { "match_all": {} }
 }
 '
-curl xxx
+# curl xxx
 {
   "query": { "match_all": {} },
   "_source": ["account_number", "balance"]
 }
 
-curl xxx
+# curl xxx
 {
   "query": { "match": { "Key": "value1 value2" } }
 }
 
-curl xxx
+# curl xxx
 {
   "query": { "match_phrase": { "address": "mill lane" } }
 }
@@ -155,7 +214,7 @@ address包含 "mill lane"的doc
 ```
 must 查询两个必须都为true
 address字段必须包含 "mill"和"lane"
-curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
+# curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": {
     "bool": {
@@ -168,7 +227,7 @@ curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/js
 }
 '
 should 查询列表中满足一个即可
-curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
+# curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": {
     "bool": {
@@ -181,7 +240,7 @@ curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/js
 }
 '
 must_not 查询列表必须都不是true
-curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
+# curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": {
     "bool": {
@@ -196,7 +255,7 @@ curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/js
 ```  
 限定词 must、should等还可以组合使用  
 ```
-curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
+# curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": {
     "bool": {
@@ -225,7 +284,7 @@ curl -XGET 'localhost:9200/bank/_search?pretty' -H 'Content-Type: application/js
 
 - JSON方式的复杂查询删除
 ```
-curl -XPOST 'localhost:9200/index_name/_delete_by_query?pretty' -H 'Content-Type: application/json' -d'
+# curl -XPOST 'localhost:9200/index_name/_delete_by_query?pretty' -H 'Content-Type: application/json' -d'
 {
   "query": { 
     "match": {
@@ -258,4 +317,123 @@ curl -XPOST 'localhost:9200/index_name/_delete_by_query?pretty' -H 'Content-Type
 {"delete":{"_id":"2"}}
 '
 ```
+## 集群操作
+集群中有多个节点组成  
+集群等级的操作大部分都可以通过指定节点来对节点操作  
+可以指定如"_local"或者节点地址、节点名  
+请求时可以带参数  
+- level
+默认cluster，可以指定indices、shards
+- wait_for_status
+等待状态的改变，默认不等待
+- wait_for_no_relocating_shards
+是否等待集群没有shard的重新分配。默认false
+- wait_for_active_shards
+数字单位，指定等待多少个shards变为active。`all`是等待集群中所有shards变为active，默认为`0`
+- wait_for_nodes
+这个请求会等待有多少个节点变为可用状态。接收条件语句如 >=Number或者ge(Number)等
+- timeout
+时间参数，控制超时的时间
+- local
+布尔值，如果为true返回本地信息
 
+### 集群健康状态检测
+```
+集群状态
+# curl -XGET 'localhost:9200/_cluster/health?pretty'
+
+索引状态
+# curl -XGET 'localhost:9200/_cluster/health/index1,index2?pretty'
+```  
+
+### 集群状态
+集群的全部信息
+```
+curl -XGET 'http://localhost:9200/_cluster/state'
+
+对信息进行过滤  
+curl -XGET 'http://localhost:9200/_cluster/state/{metrics}/{indices}'
+```
+
+#### metrics
+- version
+集群的状态版本
+- master_node
+响应的master_node
+- nodes
+响应的节点
+- routing_table
+响应的`routing_table`,也就是shard
+- blocks
+响应的`blocks`
+
+### 集群数据统计
+反应集群层次的相关数据如 shard数、store size、memory usage以及当前节点的相关信息  
+	curl -XGET 'http://localhost:9200/_cluster/stats?human&pretty'
+
+### 集群任务
+#### 任务管理
+查询当前任务
+```
+集群中所有任务
+curl -XGET 'localhost:9200/_tasks?pretty'
+指定节点上的任务
+curl -XGET 'localhost:9200/_tasks?nodes=nodeId1,nodeId2&pretty'
+指定节点上的与集群相关的任务
+curl -XGET 'localhost:9200/_tasks?nodes=nodeId1,nodeId2&actions=cluster:*&pretty'
+通过任务ID查询任务
+curl -XGET 'localhost:9200/_tasks/task_id:1?pretty'
+curl -XGET 'localhost:9200/_tasks?parent_task_id=parentTaskId:1&pretty'
+```  
+查看任务列表
+```
+curl -XGET 'localhost:9200/_cat/tasks?pretty'
+curl -XGET 'localhost:9200/_cat/tasks?detailed&pretty'
+```  
+取消任务
+	curl -XPOST 'localhost:9200/_tasks/node_id:task_id/_cancel?pretty'
+	curl -XPOST 'localhost:9200/_tasks/_cancel?nodes=nodeId1,nodeId2&actions=*reindex&pretty'
+
+
+#### 集群中等待任务
+查询集群层次的将要进行的改变,如创建索引、升级mapping、分配shard等这些还没有被执行的操作  
+	curl -XGET 'http://localhost:9200/_cluster/pending_tasks'
+执行上述命令，一般返回结果都会为空，因为改变发生的比较快。 
+
+### 集群路由调整
+该功能能够对集群内部的路由进行调整，比如 将一个shard从一个节点调到另一个节点，也可以取消分配等  
+#### 参数
+##### commands 参数
+- move
+将一个shard从一个节点移到另一个，接收指定的编号的shard和索引  
+- cancel
+取消或恢复一个shard的分配操作，`node`参数指定取消哪一个节点上的shard分配。  
+也支持使用`allow_primary`标志，标记允许主shard的分配。
+- allocate_replica
+分配一个未备分配的replica shard给一个节点。接收`index`和`shard`参数指定的索引名和shard号  `node`参数指定节点
+集群会尝试分配shard，直到失败次数达到`index.allocation.max_retries`默认为5.  
+在这之后可以用`reroute`来进行再次分配
+例子  
+```
+curl -XPOST 'localhost:9200/_cluster/reroute?pretty' -H 'Content-Type: application/json' -d'
+{
+    "commands" : [
+        {
+            "move" : {
+                "index" : "test", "shard" : 0,
+                "from_node" : "node1", "to_node" : "node2"
+            }
+        },
+        {
+          "allocate_replica" : {
+                "index" : "test", "shard" : 1,
+                "node" : "node3"
+          }
+        }
+    ]
+}
+'
+```
+> 当一个shard从A节点移动到另一个B，那么B节点上原来的shard会移动到A节点。集群特性。这种情况可以关闭集群的 allocations功能  
+
+### 
