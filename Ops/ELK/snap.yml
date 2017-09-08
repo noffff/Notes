@@ -1,0 +1,55 @@
+actions:
+#  1:
+#   action: open
+#   description: "Open the indicex closed"
+#   options:
+#     ignore_empty_list: True
+#     timeout_override: 21600
+#   filters:
+#   - filtertype: kibana
+#     exclude: True
+#   - filtertype: age
+#     source: field_stats
+#     direction: older
+#     unit: months
+#     unit_count: 1
+#     field: '@timestamp'
+#     stats_result: min_value
+#  1:
+#   action: snapshot
+#   description: "snapshot the datas "
+#   options:
+#     ignore_empty_list: True
+#     repository: ${REPO} 
+#     name: ${REPO}
+#     wait_for_completion: True
+#     max_wait: 3600
+#   filters:
+#   - filtertype: pattern
+#     kind: regex
+#     value: \..*
+#     exclude: True
+#   - filtertype: age
+#     source: field_stats
+#     direction: older
+#     unit: hours 
+#     unit_count: 2
+#     field: '@timestamp'
+#     stats_result: max_value
+  1:
+   action: delete_indices
+   description: "Delete the datas "
+   options:
+     ignore_empty_list: True
+   filters:
+   - filtertype: pattern
+     kind: regex
+     value: '\..*'
+     exclude: True
+   - filtertype: age
+     source: field_stats
+     direction: older
+     unit: months
+     unit_count: 1 
+     field: '@timestamp'
+     stats_result: min_value

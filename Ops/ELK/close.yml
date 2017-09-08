@@ -1,0 +1,36 @@
+actions:
+  1:
+   action: close
+   description: "close the datas greater than 1 days"
+   options: 
+     ignore_empty_list: True 
+     timeout_override: 3600
+   filters:
+   - filtertype: pattern
+     kind: regex
+     value: \..*
+     exclude: True
+   - filtertype: age
+     source: field_stats
+     direction: older
+     unit: days
+     unit_count: 1
+     field: '@timestamp'
+     stats_result: min_value 
+  2:
+   action: delete_indices
+   description: "Delete the datas "
+   options:
+     ignore_empty_list: True
+   filters:
+   - filtertype: pattern
+     kind: regex
+     value: '\..*'
+     exclude: True
+   - filtertype: age
+     source: field_stats
+     direction: older
+     unit: months
+     unit_count: 1
+     field: '@timestamp'
+     stats_result: min_value
