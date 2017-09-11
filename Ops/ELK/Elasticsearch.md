@@ -29,7 +29,7 @@ shards和replica的数量可以在索引被建立前定义，在索引创建后�
 Elasticsearch是基于java，运用JVM  
 ### heap size
 要对Elasticsearch的内存进行限制，就要通过限制JVM来设置  
-JVM的初始化内存大小与最大heap size是不一致的，可能会因为JVM动态调整内存大小引起卡顿。 为了避免这个问题，要将JVM初始内存设为最大heap size一致。此外，如果"bootstrap.memory_lock"开启，那么JVM会在启动时将锁定初始化内存大小。 这个前提是初始化大小等于heap size大小，并且用户拥有"memlock unlimited"否则无效  
+JVM的初始化内存大小与最大heap size是不一致的，可能会因为JVM动态调整内存大小引起卡顿。  为了避免这个问题，要将JVM初始内存设为最大heap size一致。  此外，如果"bootstrap.memory_lock"开启，那么JVM会在启动时将锁定初始化内存大小。 这个前提是初始化大小等于heap size大小，并且用户拥有"memlock unlimited"否则无效  
 "bootstrap.memory_lock"该参数也防止数据交换到磁盘上，在JVM进行垃圾回收时防止磁盘颠簸  
 检测是否开启内存锁
 	'localhost:9200/_nodes?filter_path=**.mlockall&pretty'
@@ -51,7 +51,6 @@ Elasticsearch中有多种线程池。Elasticsearch需要能够创建许多进程
 最大线程数的限制只在Linux中有，至少要允许创建2048个线程  
 设置方法
 	/etc/security/limits.conf nproc
-
 ### 设置垃圾收集器
 JDK的JVM有很多种垃圾收集器，"serial collector"适合用于单核CPU的机器或者较小的heap。  
 如果使用这个，对Elasticsearch可以说是毁灭性的。不能用它，默认使用CMS 收集器  
@@ -103,7 +102,7 @@ curl -XPUT 'localhost:9200/index_name?pretty' -H 'Content-Type: application/json
 模板包含两部分
 - 简单的匹配Template的部分，决定索引是否用该模板  
 - settings
-- mappings
+- mappings  
 [详细内容](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)
 ##### 设定映射 Mapping
 映射是定义一个doc的字段存储什么样的内容，并且如何被索引的过程。  
@@ -113,9 +112,7 @@ curl -XPUT 'localhost:9200/index_name?pretty' -H 'Content-Type: application/json
 - doc中的所有字段的值是否应该被`_all`字段索引
 - 日期的格式
 - 自定义规则来控制动态的添加字段
-
 ```
-[详细内容](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html#mapping)
 curl -XPUT 'localhost:9200/test?pretty' -H 'Content-Type: application/json' -d'
 {
     "settings" : {
@@ -130,7 +127,8 @@ curl -XPUT 'localhost:9200/test?pretty' -H 'Content-Type: application/json' -d'
     }
 }
 '
-```
+```  
+[详细内容](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html#mapping)
 ##### 检查索引是否存在
 	curl -I 'localhost:9200/index_name?pretty'
 

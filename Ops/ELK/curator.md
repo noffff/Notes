@@ -1,30 +1,5 @@
 高复杂性的操作
 入口配置文件，一般默认为`~/.curator/curator.yml`
-- 例子
-```
----
-# Remember, leave a key empty if there is no value.  None will be a string,
-# not a Python "NoneType"
-client:
-  hosts:
-    - 127.0.0.1
-  port: 9200
-  url_prefix:
-  use_ssl: False
-  certificate:
-  client_cert:
-  client_key:
-  ssl_no_validate: False
-  http_auth:
-  timeout: 30
-  master_only: False
-
-logging:
-  loglevel: INFO
-  logfile:
-  logformat: default
-  blacklist: ['elasticsearch', 'urllib3']
-```
 
 动作定义:
 - 动作文件

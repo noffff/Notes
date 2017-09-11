@@ -43,21 +43,6 @@ curl -XPUT http://localhost:9200/index_name -d '
 curl -XPOST http://localhost:9200/index_name/_refresh
 ```
 
-## 操作集群
-- 检测集群index
-`curl -XGET 'localhost:9200/_cat/indices?v&pretty'`
-<br>
-- 检测集群健康
-  `curl -XGET 'localhost:9200/_cat/health?v&pretty'`
-  - 集群健康状况会返回三种状态
-    - Green 集群OK
-    - Yello 集群数据没有副本,默认是一副本，所以单节点会报黄
-    - Red   有些shard不可用
-- 检测索引健康状况
-  `curl -XGET 'localhost:9200/_cluster/health/test1,test2?pretty'`
-- 检测集群节点列表
-  `curl -XGET 'localhost:9200/_cat/nodes?v&pretty'`
-
 ## Index 
 - 列出全部索引
   `curl -XGET 'localhost:9200/_cat/indices?v&pretty'`
