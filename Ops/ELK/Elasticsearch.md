@@ -20,11 +20,10 @@ shard的分布以及将一个扩散到多个shard的查询请求整合返回的�
 ### Replicas
 为了防止错误减少故障率,提高可用性，Elasticsearch支持对索引的shard创建副本，这种叫做replica shard  
 - Replica提供了shard/node的高可用性，所以相同的replica node是不能分配到相同节点。
-- 可以将搜索等请求直接放在replica中，提高吞吐量
-
+- 可以将搜索等请求直接放在replica中，提高吞吐量  
 每个索引可以划分为多个shards。一个索引可以有0到多个副本，一旦创建了副本就有primary shard和replica shard  
 shards和replica的数量可以在索引被建立前定义，在索引创建后，可以动态改变replica的值，但是不能改变已经生效的shards  
-每个shard都是一个Lucene索引，一个Lucene索引的doc是有最大限制。其最大值为**2,147,483,519 (= Integer.MAX_VALUE - 128) **,可以通过_cat/shards API查询
+每个shard都是一个Lucene索引，一个Lucene索引的doc是有最大限制。其最大值为**2,147,483,519 (= Integer.MAX_VALUE - 128)**,可以通过_cat/shards API查询
 ---
 ## 相关参数设置
 Elasticsearch是基于java，运用JVM  
@@ -137,8 +136,11 @@ curl -XPUT 'localhost:9200/test?pretty' -H 'Content-Type: application/json' -d'
 
 ### doc操作
 有时候有些数据没有被刷到disk上，会存在translate.log里也不会丢失  
-但是如果想立刻生效可以使用
+但是如果想立刻生效写入磁盘可以使用
 	curl -XPOST 'localhost:9200/index_name/_flush/synced?pretty'
+但是如果想立刻建立lucene索引使其可以被搜索可以使用  
+	curl -XPOST 'localhost:9200/index_name/_refresh?pretty'
+以上俩种都有固定周期限制
 #### 创建doc
 ```
 # curl -XPUT 'localhost:9200/index_name/type_name/ID?pretty&pretty' -H 'Content-Type: application/json' -d'
@@ -160,22 +162,23 @@ cat API能查看集群多个状态
 - search
 	curl -XGET 'localhost:9200/index_name/_search?q=*&sort=account_number:asc&pretty&pretty'
 	q=*参数匹配索引中的所有，sort=account_number:asc参数表示使用account_number字段的值升序排序
-  - 返回结果字段解释
-    - took
+	q=key:value参数匹配索引中的所有
+- 返回结果字段解释
+  - took
 花费的时间
-    - timed_out
+  - timed_out
 是否超时
-    - _shards
+  - _shards
 查询了几个shard中，并且成功和失败的数量
-    - hits
+  - hits
 查询结果
-    - hits.total
+  - hits.total
 多少doc匹配
-    - hits.hits
+  - hits.hits
 查询结果，默认前10个doc
-    - hits.sort
+  - hits.sort
 查询结果使用的排序key
-    - hits._score max_score
+  - hits._score max_score
 忽略这些字段
 ##### 复杂查询
 JSON格式的查询，类似于DSL  
