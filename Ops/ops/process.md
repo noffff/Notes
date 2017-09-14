@@ -4,7 +4,7 @@
 Linux采用“轻量级进程”作为多线程。两个轻量级进程(线程)之间可以进行一些资源的共享，如地址空间，打开的文件等。  
 Linux中，一个线程组就是一组轻量级进程实现的多线程应用。  
 内核通过**进程描述符(process descriptor,也叫做task_struct)**来描述一个进程的详细信息.如地址空间，进程优先级，状态等  
-![进程描述符](https://github.com/noffff/Notes/blob/master/Ops/ops/%E8%BF%9B%E7%A8%8B/process_descriptor.jpg)  
+![进程描述符](https://github.com/noffff/Notes/blob/master/Ops/ops/process_descriptor.jpg)  
 `进程描述符`中的state字段描述了进程当前所处的状态，状态间互相互斥，该状态种类由一组字符串组成。  
 - TASK_RUNNING
 可运行状态，正在运行或准备执行
@@ -53,6 +53,7 @@ nice支持19(最低)到-20(最高优先级)，默认0
   - 堆   `malloc()`根据需求动态分配内存
 - 堆栈段
 局部变量、函数参数、返回的存储函数存放区域
-
+`cat /proc/PID/smaps 查看进程的内存占用`
 
 ## CPU调度
+taskset 将一个或多个进程绑到一个或多个CPU核心上，其返回值为十六进制的`位掩码`。最高位bit对应第一个逻辑CPU，最低位对应最后一个
