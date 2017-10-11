@@ -51,3 +51,11 @@ Deployment也会在原有期望的pod数的基础上在额外创建一部分的P
 ### DeamonSet
 一个DaemonSet管理一些node运行一个pod的副本。当节点从集群中移除时，pod也会被视为垃圾回收。删除一个daemonSet，pod也会被移除  
 
+# 技巧
+## 选择特定的node运行pod
+为node加上标签`kubectl label nodes --all test=test1`  
+然后利用`nodeSelector`按照label选取  
+```
+      nodeSelector:
+       test: test1
+```
