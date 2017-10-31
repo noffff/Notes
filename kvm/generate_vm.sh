@@ -22,7 +22,6 @@ for i in `seq $number`
 do
     echo "Creating $i vm....."
     New_file="${xml_dir}/${clone_disk_base_name}${i}.xml"
-    MAC_address=$(echo $RANDOM | md5sum | sed 's/\(..\)/&:/g' | cut -c1-17)
     qemu-img create -f qcow2 -o size=20G,backing_file=${raw_dir}/${raw_disk} \
     "${disk_dir}${clone_disk_base_name}$i"
     virsh dumpxml ${raw_vm_name}>$New_file
@@ -30,7 +29,7 @@ do
     sed -i "s|<uuid>.*</uuid>|<uuid>$(uuidgen)</uuid>|g" $New_file
     sed -i "s|${disk_dir}${raw_disk}|${disk_dir}${clone_disk_base_name}$i|g" $New_file
     sed -i "s|<driver name='qemu' type='raw'/>|<driver name='qemu' type='qcow2'/>|g" $New_file
-    sed -i "s|<mac address='*'/>|${MAC_address}|g" $New_file
+    sed -i "s|<mac address='.*'/>|<mac address='52:54:00:fc:$(echo $RANDOM | md5sum | sed 's/\(..\)/&:/g' | cut -c1-5)'/>|g" $New_file
     virsh define ${New_file}
 done
 echo "End at $(date)\n"
