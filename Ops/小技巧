@@ -6,3 +6,4 @@ sysctl -a |grep fs.inotify
    fs.inotify.max_user_instances = 128  一个用户可创建的实例数量
    fs.inotify.max_user_watches = 8192  监控最大目录
 可根据需求上调
+sed 中挨着s的字符被视为分隔符
