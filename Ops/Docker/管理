@@ -48,3 +48,6 @@ Docker Registry
 		3.htpasswd
 		  允许配置一个基于Apache htpasswd文件的认证方式
 
+
+
+docker volume ls -q -f dangling=true
