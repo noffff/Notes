@@ -1,10 +1,10 @@
 # 对象
 ## 基础对象
 ### Pod
-Pod是最小的部署对象,是k8s部署和构建任务的基础单元。一个pod代表集群中一个正在运行的任务。  
-Pod可以运行在一个或多个容器中，其可能包括存储资源、IP。在k8s中是一个独立的实例  
-一般情况下，k8s中Docker是Pod最为普遍的运行体现。  
-> Pod挂就挂了，并且不可弹性伸缩，所以还是使用Controller较为合理  
+Pod在k8s平台中是原子单位,是k8s部署和构建任务的基础单元。一个pod代表集群中一个正在运行的任务。  
+它可以运行在一个或多个容器中，其可能包括**存储资源、IP、任务的多个容器如何运行的信息** 
+一个pod对应一个独立的实例,一般情况下，k8s中Docker是Pod最为普遍的运行体现。  
+> Node挂掉，Pod就会丢失。除此之外Pod不可弹性伸缩，所以在业务场景中，推荐使用高级的Controller较为合理  
 #### pod状态及策略
 ##### 状态
 一个pod的`status`字段是一个拥有`phase`字段的`Podstatus`对象  
@@ -36,18 +36,20 @@ pod已经在节点上启动。并且至少一个容器时正常运行的
 Pod是**最小的工作单位**，这个意思就是就算重启也只应该重启Pod而不是重启容器。并且与Pod相对应的进程如果执行完毕  
 Pod就会删除。其生命周期非常短暂。在资源紧张或者Node维护时就会挂掉。结合这些信息来看，一般不会直接进行Pod的操作，可以使用`Controller`来创建管理Pod。
 
-#### Controller
-一个`Controller`可以创建和管理多个Pod。并且拥有处理副本及自我恢复能力(故障疏散)  
-通常情况下，Controller是按照用户提供的Pod Template来工作的
-
 #### Pod Template
 所谓模板就是一个Pod的描述，描述其组成、声明其用到的资源。比如`ReplicateControllers`、`jobs`、`DaemonSet`。  
 模板被利用生成后，就与该工作再也没关系
 
 ### Service
-Pod终有一死(mortal)，不能复活。除此之外，Pod的IP在整个时间内也是不稳定的。那么一组做后端的Pod和一组前端的Pod是如何相互定位的  
+Pod终有删除的一天(mortal)，删除后就不会出现同样的。除此之外，Pod的IP在运行时也不稳定。那么一组做后端的Pod和一组前端的Pod是如何相互定位的  
 这时候就需要叫做`Service`的功能  
 k8s中的`Service`用来定义一组逻辑的`Pod`以及它们之间的访问策略。`Service`涵盖的Pod由`Label Selector`决定  
 这样后端变化时，前端根本不管只是会以`Service`为目标进行连接  
 在k8s的原原生应用中，k8s提供简单的API接口来更新Service中的Pod。对于不是原生的应用，K8s提供虚拟IP可以桥接在后端Pod上  
+
+## 高级对象
+### Controller
+一个`Controller`可以创建和管理多个Pod。并且拥有处理副本及自我恢复能力(故障疏散)  
+通常情况下，Controller是按照用户提供的Pod Template来工作的
+
 
